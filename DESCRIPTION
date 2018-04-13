@@ -1,9 +1,16 @@
 Package: FMHighLD
-Version: 0.0.0.9000
+Version: 0.9
 Title: What the Package Does (One Line, Title Case)
 Description: What the package does (one paragraph).
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
+Authors@R: person("Rene", "Welch", email = "welch@stat.wisc.edu", role = c("aut", "cre"))
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 ByteCompile: true
+LinkingTo: 
+  Rcpp,
+  RcppArmadillo
+Imports: 
+  Rcpp,
+  RcppArmadillo
+RoxygenNote: 6.0.1
