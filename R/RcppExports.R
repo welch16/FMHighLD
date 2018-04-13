@@ -13,10 +13,10 @@
 #' @return a nxk matrix with entries P(Z_i = k | Y_i = y_i , mu = mu_ik ,sigma = sigma_ik)
 #' @export
 estep <- function(y, pi, mu, sigma) {
-    .Call(`_FMHighLD_estep`, y, pi, mu, sigma)
+    .Call('_FMHighLD_estep', PACKAGE = 'FMHighLD', y, pi, mu, sigma)
 }
 
 lmm_comp_var <- function(var_factors, residual_error, gene_error) {
-    .Call(`_FMHighLD_lmm_comp_var`, var_factors, residual_error, gene_error)
+    .Call('_FMHighLD_lmm_comp_var', PACKAGE = 'FMHighLD', var_factors, residual_error, gene_error)
 }
 

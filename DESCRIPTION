@@ -7,10 +7,11 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 ByteCompile: true
-LinkingTo: 
+LinkingTo:
   Rcpp,
   RcppArmadillo
-Imports: 
+Imports:
   Rcpp,
-  RcppArmadillo
+  RcppArmadillo,
+    GenomicRanges
 RoxygenNote: 6.0.1
