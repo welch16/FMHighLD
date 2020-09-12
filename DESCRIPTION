@@ -1,8 +1,9 @@
 Package: FMHighLD
-Version: 0.9
+Version: 0.9.00
 Title: What the Package Does (One Line, Title Case)
 Description: What the package does (one paragraph).
-Authors@R: person("Rene", "Welch", email = "welch@stat.wisc.edu", role = c("aut", "cre"))
+Authors@R: person("Rene", "Welch", email = "rwelch2@wisc.edu",
+  role = c("aut", "cre"))
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -14,4 +15,8 @@ Imports:
   Rcpp,
   RcppArmadillo,
     GenomicRanges
-RoxygenNote: 6.0.1
+RoxygenNote: 7.1.1
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
