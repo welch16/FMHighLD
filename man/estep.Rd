@@ -9,16 +9,18 @@ estep(y, pi, mu, sigma)
 \arguments{
 \item{y}{a vector with the association statistics with length n}
 
-\item{pi}{a vector with the prior prob. of allocation into the components with length k}
+\item{pi}{a vector with the prior prob. of allocation into the
+components with length k}
 
 \item{mu}{a nxk matrix with the conditional means of Y | Z = k}
 
 \item{sigma}{a nxk matrix with the conditional std. dev of Y | Z = k}
 }
 \value{
-a nxk matrix with entries P(Z_i = k | Y_i = y_i , mu = mu_ik ,sigma = sigma_ik)
+a nxk matrix with entries
+  P(Z_i = k | Y_i = y_i , mu = mu_ik ,sigma = sigma_ik)
 }
 \description{
 Calculates the E-step probabilities in the implementation
-of the EM-algorithm for mixture models
+of the EM-algorithm for mixture models used by FM-HighLD
 }

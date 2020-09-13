@@ -21,15 +21,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // lmm_comp_var
-arma::mat lmm_comp_var(arma::vec var_factors, arma::vec residual_error, arma::vec gene_error);
-RcppExport SEXP _FMHighLD_lmm_comp_var(SEXP var_factorsSEXP, SEXP residual_errorSEXP, SEXP gene_errorSEXP) {
+arma::mat lmm_comp_var(arma::vec var_factors, arma::vec residual_error, arma::vec re_error);
+RcppExport SEXP _FMHighLD_lmm_comp_var(SEXP var_factorsSEXP, SEXP residual_errorSEXP, SEXP re_errorSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type var_factors(var_factorsSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type residual_error(residual_errorSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type gene_error(gene_errorSEXP);
-    rcpp_result_gen = Rcpp::wrap(lmm_comp_var(var_factors, residual_error, gene_error));
+    Rcpp::traits::input_parameter< arma::vec >::type re_error(re_errorSEXP);
+    rcpp_result_gen = Rcpp::wrap(lmm_comp_var(var_factors, residual_error, re_error));
     return rcpp_result_gen;
 END_RCPP
 }

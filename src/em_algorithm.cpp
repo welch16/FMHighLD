@@ -3,16 +3,18 @@
 
 using namespace Rcpp ;
 
-//' E-step 
+//' E-step
 //' 
 //' Calculates the E-step probabilities in the implementation
-//' of the EM-algorithm for mixture models
+//' of the EM-algorithm for mixture models used by FM-HighLD
 //' 
 //' @param y a vector with the association statistics with length n
-//' @param pi a vector with the prior prob. of allocation into the components with length k
+//' @param pi a vector with the prior prob. of allocation into the
+//'   components with length k
 //' @param mu a nxk matrix with the conditional means of Y | Z = k
 //' @param sigma a nxk matrix with the conditional std. dev of Y | Z = k
-//' @return a nxk matrix with entries P(Z_i = k | Y_i = y_i , mu = mu_ik ,sigma = sigma_ik)
+//' @return a nxk matrix with entries
+//'   P(Z_i = k | Y_i = y_i , mu = mu_ik ,sigma = sigma_ik)
 //' @export
 // [[Rcpp::export]]
 arma::mat estep(
@@ -40,11 +42,21 @@ arma::mat estep(
   return gamma_mat;
 }
 
+
+//' Computes the variance of a linear mixed model
+//'
+//' @param var_factors a vector with the variances for each component of
+//'   the linear mixed model random effects
+//' @param residual_error a vector with the residual errors of the
+//'   linear mixed model used by FM-HighLD
+//' @param re_error a vector with the random effect erros of the linear
+//'   mixed model used by FM-HighL:D
+//' @return The variance matrix of the model
 // [[Rcpp::export]]
 arma::mat lmm_comp_var(
 		       arma::vec var_factors,
 		       arma::vec residual_error,
-		       arma::vec gene_error) {
+		       arma::vec re_error) {
 
   const int L = residual_error.n_elem;
   const int N = var_factors.n_elem;
@@ -53,7 +65,7 @@ arma::mat lmm_comp_var(
 
   for(int i = 0; i < N; i++){
     for(int l = 0; l < L; l++){
-      var_mat(i,l) = std::pow(residual_error(l),2) + var_factors(i) * std::pow(gene_error(l),2);
+      var_mat(i,l) = std::pow(residual_error(l),2) + var_factors(i) * std::pow(re_error(l),2);
     }    
   }
   
