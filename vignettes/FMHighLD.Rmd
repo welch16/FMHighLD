@@ -1,6 +1,9 @@
 ---
 title: "FMHighLD"
-output: rmarkdown::html_vignette
+author: "Rene Welch"
+package: "FMHighLD"
+output:
+  BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{FMHighLD}
   %\VignetteEngine{knitr::rmarkdown}
