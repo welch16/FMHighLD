@@ -62,18 +62,18 @@ select_causals_single <- function(data, model, group, rand_param) {
 #' @param model a fitted model with the previously selected causal candidates
 #' @param group name of the grouping variable used to pick the causal
 #'  candidates
-#' @param rand_param configuration parameter used to pick the caI usal candidate
+#' @param rand_param configuration parameter used to pick the causal candidate
 #'  per group
 #' @param cond_res a logical indicating whether to use conditional residuals
 #'  of the linear mixed model
 select_causals_multi <- function(data, model, group, rand_param = NULL,
   cond_res = FALSE) {
-    
+
   include_intercept = beta %>%
         names() %>%
         str_detect("Intercept") %>%
         any()
-  model_formula <- stats::formula(model)        
+  model_formula <- stats::formula(model)
   response <- as.character(model_formula)[2]
 
     include_intercept = formula(model) %>%
@@ -82,7 +82,7 @@ select_causals_multi <- function(data, model, group, rand_param = NULL,
     beta = fixef(model)
     
     des_mat = build_design_matrix(new_data,beta,include_intercept)
-    fitted = (des_mat %*% beta) %>%  as.numeric()
+    fitted = as.numeric(des_mat %*% beta)
 
     res = pluck(new_data,response) - fitted
     

@@ -14,7 +14,7 @@ select_causals_multi(data, model, group, rand_param = NULL, cond_res = FALSE)
 \item{group}{name of the grouping variable used to pick the causal
 candidates}
 
-\item{rand_param}{configuration parameter used to pick the caI usal candidate
+\item{rand_param}{configuration parameter used to pick the causal candidate
 per group}
 
 \item{cond_res}{a logical indicating whether to use conditional residuals
