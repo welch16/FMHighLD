@@ -31,6 +31,6 @@ kl <- function(p1, p2) {
 #' v1 <- v1 / sum(v1)
 #' jsd(u1, v1)
 jsd <- function(p1, p2) {
-    m <- .5 * (p1 + p2)
-    .5 * kl(p1, m) + .5 * kl(p2, m)
+  m <- 0.5 * (p1 + p2)
+  0.5 * kl(p1, m) + 0.5 * kl(p2, m)
 }

@@ -15,9 +15,18 @@ LinkingTo:
   Rcpp,
   RcppArmadillo
 Imports:
-  Rcpp,
-  RcppArmadillo,
-    GenomicRanges
+    Rcpp,
+    RcppArmadillo,
+    GenomicRanges,
+    dplyr,
+    nnet,
+    lme4,
+    Matrix,
+    stats,
+    stringr,
+    glue,
+    broom,
+    tidyselect
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,
