@@ -4,7 +4,7 @@
 \alias{select_causals_multi}
 \title{Selects the causal variants in the locus for a multi-trait model}
 \usage{
-select_causals_multi(data, model, group, rand_param = NULL, cond_res = FALSE)
+select_causals_multi(data, model, group, rand_param, cond_res = FALSE)
 }
 \arguments{
 \item{data}{a `data.frame` used to fit the FM-HighLD model}

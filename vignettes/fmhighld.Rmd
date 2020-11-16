@@ -1,11 +1,8 @@
 ---
-title: "FMHighLD"
-author: "Rene Welch"
-package: "FMHighLD"
-output:
-  BiocStyle::html_document
+title: "Using FMHighLD"
+output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{FMHighLD}
+  %\VignetteIndexEntry{Using FMHighLD}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -17,6 +14,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup, eval = FALSE}
+```{r setup}
 library(FMHighLD)
 ```

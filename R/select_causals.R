@@ -66,35 +66,29 @@ select_causals_single <- function(data, model, group, rand_param) {
 #'  per group
 #' @param cond_res a logical indicating whether to use conditional residuals
 #'  of the linear mixed model
-select_causals_multi <- function(data, model, group, rand_param = NULL,
-  cond_res = FALSE) {
+select_causals_multi <- function(data, model, group,
+  rand_param, cond_res = FALSE) {
 
-  include_intercept = beta %>%
-        names() %>%
-        str_detect("Intercept") %>%
-        any()
   model_formula <- stats::formula(model)
   response <- as.character(model_formula)[2]
 
-    include_intercept = formula(model) %>%
-        terms() %>% attr("intercept") 
-        
-    beta = fixef(model)
-    
-    des_mat = build_design_matrix(new_data,beta,include_intercept)
-    fitted = as.numeric(des_mat %*% beta)
+  beta <- lme4::fixef(model)
+  design_matrix <- build_design_matrix(data, beta)
+  fitted <- as.numeric(design_matrix %*% beta)
+  residuals <- data[[response]] - fitted
 
-    res = pluck(new_data,response) - fitted
-    
+  if (cond_res) {
+    stop("need to implement conditional residuals")
 
+  }
 
-    causal_rule(new_data,res,rand_param,to_group)
+  causal_rule(data, residuals, rand_param, group)
 }
 
 
-causal_rule <- function(new_data,res,rand_param,to_group)
-{
-    aux_data = new_data %>%
+causal_rule <- function(new_data, res, rand_param, to_group) {
+    
+  aux_data = new_data %>%
         select("SNP",to_group) %>%
         mutate(
             res.sq = res^2) %>%
