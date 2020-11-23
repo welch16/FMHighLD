@@ -2,6 +2,7 @@
 #' Checks whether the intercept is include in the underlying linear model
 #' @param features names of the estimated coefficient
 #' @return a logical indicating whether include the intercept in the model
+#' @importFrom stringr str_detect
 include_intercept <- function(features) {
   any(stringr::str_detect("Intercept", features))
 }
@@ -66,6 +67,8 @@ select_causals_single <- function(data, model, group, rand_param) {
 #'  per group
 #' @param cond_res a logical indicating whether to use conditional residuals
 #'  of the linear mixed model
+#' @importFrom stats formula
+#' @importFrom lme4 fixef
 select_causals_multi <- function(data, model, group,
   rand_param, cond_res = FALSE) {
 
@@ -86,15 +89,22 @@ select_causals_multi <- function(data, model, group,
 }
 
 
-causal_rule <- function(new_data, res, rand_param, to_group) {
-    
-  aux_data = new_data %>%
-        select("SNP",to_group) %>%
-        mutate(
-            res.sq = res^2) %>%
-        group_by(.dots = to_group)
-    
-    if(is.null(rand_param)){
+#' Applies the causal selection rule to the residual vector
+#' @param data a `data.frame` used to fit the FM-HighLD model
+#' @param residuals a vector of residuals for all the SNPs
+#' @param group name of the grouping variable used to pick the causal
+#'  candidates
+#' @param rand_param configuration parameter used to pick the causal candidate
+#'  per group
+#' @importFrom dplyr select group_by mutate summarize
+#' @importFrom tidyselect one_of
+causal_rule <- function(data, residuals, rand_param, to_group) {
+
+  new_data <- dplyr::select(SNP, tidyselect::one_of(to_group))
+  new_data <- dplyr::mutate(new_data, res.sq = residuals ^ 2)
+  new_data <- dplyr::group_by(new_data, to_group)
+  
+  if(is.null(rand_param)){
         out = aux_data %>% 
             summarize(
                 which_snp = SNP[nnet::which.is.max(-res.sq)]
