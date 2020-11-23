@@ -1,6 +1,4 @@
 
-
-
 #' Computes the i-th mixture model for fitting the FM-HighLD model
 #' @param i a numeric index, usually i = 2 only that correspond to the causal
 #'  variants, but the model is performed for a list in case more models are

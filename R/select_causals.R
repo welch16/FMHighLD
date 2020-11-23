@@ -45,7 +45,7 @@ build_design_matrix <- function(data, beta) {
 #'  candidates
 #' @param rand_param configuration parameter used to pick the causal candidate
 #'  per group
-#' @importFrom stats formula terms
+#' @importFrom stats formula terms coef model.matrix
 select_causals_single <- function(data, model, group, rand_param) {
 
   model_formula <- stats::formula(model)
@@ -96,68 +96,65 @@ select_causals_multi <- function(data, model, group,
 #'  candidates
 #' @param rand_param configuration parameter used to pick the causal candidate
 #'  per group
-#' @importFrom dplyr select group_by mutate summarize
+#' @importFrom dplyr select group_by mutate summarize ungroup bind_rows
+#' @importFrom dplyr top_n sample_n filter inner_join anti_join
 #' @importFrom tidyselect one_of
+#' @importFrom nnet which.is.max
+#' 
 causal_rule <- function(data, residuals, rand_param, to_group) {
 
   new_data <- dplyr::select(SNP, tidyselect::one_of(to_group))
-  new_data <- dplyr::mutate(new_data, res.sq = residuals ^ 2)
+  new_data <- dplyr::mutate(new_data, res_seq = residuals ^ 2)
   new_data <- dplyr::group_by(new_data, to_group)
-  
-  if(is.null(rand_param)){
-        out = aux_data %>% 
-            summarize(
-                which_snp = SNP[nnet::which.is.max(-res.sq)]
-            )  %>%
-          ungroup()    
-    }else if(rand_param$strat == "all"){
-        
-        out = aux_data %>% 
-            summarize(
-                which_snp = SNP[select_kth_random(res.sq,rand_param$prob,rand_param$select)]
-            ) %>%
-            ungroup()
-        
-    }else if(rand_param$strat == "pick_M"){
-    
-        out = aux_data %>%
-            summarize(
-                n = n(),
-                which_snp = SNP[nnet::which.is.max(-res.sq)])
-        
-        if(rand_param$which == "any"){
-            picks = out %>%
-                ungroup() %>% 
-                filter( n > 1) %>%
-                select(-n,-which_snp) %>% 
-            sample_n(rand_param$M)
-            
-        }else if(rand_param$which == "largeLD"){
-            picks = out %>%
-                ungroup() %>% 
-                arrange(desc(n)) %>%
-                head(rand_param$M) %>%
-                select(-n,-which_snp)
-            
-        }
-        
-        pick_data = picks %>%
-            inner_join(
-                aux_data,by = to_group) %>%
-          group_by(.dots = to_group) %>% 
-            summarize(
-                which_snp = SNP[select_kth_random(res.sq,rand_param$prob,rand_param$select)]
-            ) %>%
-            ungroup()
-        
-        out = out %>%
-            ungroup() %>%
-            select(-n) %>%
-          anti_join(picks,by = to_group) %>%
-            bind_rows(pick_data)
-        
+
+  if (is.null(rand_param)) {
+    out <- dplyr::summarize(new_data,
+      which_snp = SNP[nnet::which.is.max(-res_seq)], .groups = "drop")
+  } else if (rand_param$strat == "all") {
+
+    out <- dplyr::summarize(new_data,
+      which_snp =
+        SNP[select_kth_random(res_seq, rand_param$prob, rand_param$select)],
+        .groups = "drop")
+
+  } else if (rand_param$strat == "pick_M"){
+
+    out <- dplyr::summarize(new_data,
+      n = n(),
+      which_snp = SNP[nnet::which.is.max(-res_seq)])
+
+    if (rand_param$which == "any"){
+
+      picks <- dplyr::ungroup(out)
+      picks <- dplyr::filter(picks, n > 1)
+      picks <- dplyr::select(picks, -n, -which_snp)
+      picks <- dplyr::sample_n(picks, rand_param$M)
+
+    } else if (rand_param$which == "largeLD"){
+
+      picks <- dplyr::ungroup(out)
+      picks <- dplyr::top_n(picks, rand_param$M, wt = n)
+      picks <- dplyr::select(picks, -n, -which_snp)
+
     }
-    out
+
+    pick_data <- dplyr::inner_join(picks, new_data, by = to_group)
+    pick_data <- dplyr::group_by(pick_data, !! rlang::syms(to_group))
+    pick_data <- dplyr::summarize(pick_data,
+      which_snp =
+        SNP[select_kth_random(res_seq, rand_param$prob, rand_param$select)],
+      .groups = "drop")
+
+    out <- dplyr::ungroup(out)
+    out <- dplyr::select(out, -n)
+    out <- dplyr::anti_join(out, picks, by = to_group)
+    out <- dplyr::bind_rows(out, pick_data)
+
+  }
+
+  n <- which_snp <- SNP <- res_seq <- NULL
+
+  out
 }
 
 #' Selects the k-th smallest squared residual randomly with probability
