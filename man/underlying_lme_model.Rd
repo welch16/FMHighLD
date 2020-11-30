@@ -4,12 +4,12 @@
 \alias{underlying_lme_model}
 \title{performs the underlying linear model in FMHighLD}
 \usage{
-underlying_lme_model(i, X, gamma, error_bound)
+underlying_lme_model(i, cov_mat, gamma, error_bound)
 }
 \arguments{
 \item{i}{index of the model}
 
-\item{X}{covariate matrix}
+\item{cov_mat}{covariate matrix}
 
 \item{gamma}{estep probabilities}
 
