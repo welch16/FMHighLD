@@ -92,7 +92,7 @@ select_causals_multi <- function(data, model, group,
 #' Applies the causal selection rule to the residual vector
 #' @param data a `data.frame` used to fit the FM-HighLD model
 #' @param residuals a vector of residuals for all the SNPs
-#' @param group name of the grouping variable used to pick the causal
+#' @param to_group names of the grouping variable used to pick the causal
 #'  candidates
 #' @param rand_param configuration parameter used to pick the causal candidate
 #'  per group
@@ -100,7 +100,6 @@ select_causals_multi <- function(data, model, group,
 #' @importFrom dplyr top_n sample_n filter inner_join anti_join
 #' @importFrom tidyselect one_of
 #' @importFrom nnet which.is.max
-#' 
 causal_rule <- function(data, residuals, rand_param, to_group) {
 
   new_data <- dplyr::select(SNP, tidyselect::one_of(to_group))
@@ -117,20 +116,20 @@ causal_rule <- function(data, residuals, rand_param, to_group) {
         SNP[select_kth_random(res_seq, rand_param$prob, rand_param$select)],
         .groups = "drop")
 
-  } else if (rand_param$strat == "pick_M"){
+  } else if (rand_param$strat == "pick_M") {
 
     out <- dplyr::summarize(new_data,
       n = n(),
       which_snp = SNP[nnet::which.is.max(-res_seq)])
 
-    if (rand_param$which == "any"){
+    if (rand_param$which == "any") {
 
       picks <- dplyr::ungroup(out)
       picks <- dplyr::filter(picks, n > 1)
       picks <- dplyr::select(picks, -n, -which_snp)
       picks <- dplyr::sample_n(picks, rand_param$M)
 
-    } else if (rand_param$which == "largeLD"){
+    } else if (rand_param$which == "largeLD") {
 
       picks <- dplyr::ungroup(out)
       picks <- dplyr::top_n(picks, rand_param$M, wt = n)

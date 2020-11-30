@@ -14,7 +14,7 @@ causal_rule(data, residuals, rand_param, to_group)
 \item{rand_param}{configuration parameter used to pick the causal candidate
 per group}
 
-\item{group}{name of the grouping variable used to pick the causal
+\item{to_group}{names of the grouping variable used to pick the causal
 candidates}
 }
 \description{
