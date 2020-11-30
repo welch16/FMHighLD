@@ -1,4 +1,4 @@
-test_that("kl works", {
+test_that("kl gets zero for same vector", {
 
   p1 <- c(3, 2, 1)
 
