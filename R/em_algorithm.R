@@ -6,6 +6,7 @@
 #' @param sigma0 the error variance estimate of the background model
 #' @param verbose a logical indicator of adding process messages
 #' @return a list with the updated parameters in one EM iteration
+#' @importFrom methods new
 #' @importFrom purrr map map_int
 #' @importFrom lme4 lFormula
 #' @importFrom rlang rep_along
@@ -18,8 +19,6 @@ em_iteration_multi <-
   if (verbose) message("--starting EM iter")
 
   error_bound <- 1e-4
-  # N <- nrow(data)
-
   # include_intercept <- attr(stats::terms(formula), "intercept")
   response <- get_response_name(formula)
 
@@ -37,7 +36,7 @@ em_iteration_multi <-
   # generate variance matrix
   if (verbose) message("--calculating variances")
 
-  Zt <- lme4::lFormula(formula, data)[["reTrms"]][["Zt"]]
+  zt <- lme4::lFormula(formula, data)[["reTrms"]][["Zt"]]
   re_error_list <- purrr::map(model_list, broom::tidy)
 
   # fix zero or almost zero estimated variances
@@ -54,12 +53,12 @@ em_iteration_multi <-
     ~ pmax(., rep_along(., error_bound)))
 
   nrandom_effects <- unique(purrr::map_int(re_error_list, length))
-  ntraits <- nrow(Zt) / nrandom_effects
+  ntraits <- nrow(zt) / nrandom_effects
 
   re_variances <- purrr::map(re_error_list, parse_re_variance, ntraits)
-  sigma <- purrr::map(re_variances, ~ Matrix::crossprod(Zt, .))
+  sigma <- purrr::map(re_variances, ~ Matrix::crossprod(zt, .))
 
-  sigma <- purrr::map(sigma, ~ . %*% Zt)
+  sigma <- purrr::map(sigma, ~ . %*% zt)
   sigma <- purrr::map(sigma, diag)
 
   sigma <- purrr::map2(sigma, residual_error_list, ~ sqrt(.x + .y ^ 2))
@@ -73,20 +72,16 @@ em_iteration_multi <-
   gamma_mat <- pmax(gamma_mat, 1e-12)
   idxs <- seq_len(ncol(gamma_mat))
 
-  X_matrices <- purrr::map(model_list, stats::model.matrix)
-
+  # X_matrices <- purrr::map(model_list, stats::model.matrix)
   # p = X_matrices %>% map_int(ncol) %>% unique()
 
   if (verbose) message("--fitting new models")
-  models <- purrr::map2( idxs[-1], X_matrices, underlying_lme_model,
+  models <- purrr::map2(idxs[-1], X_matrices, underlying_lme_model,
     gamma_mat, error_bound)
 
   group <- NULL
-  list(
-    "models" = models,
-    "gamma" = gamma_mat,
-    "mu" = mu,
-    "sigma" = sigma)
+  FMIter(nassoc = nrow(data), singletrait = FALSE, models = models,
+    gamma = gamma_mat, mu = mu, sigma = sigma)
 }
 
 #' Gets the name of the response based on the formula
@@ -97,6 +92,10 @@ em_iteration_multi <-
 get_response_name <- function(formula) {
 
 out <- attr(stats::terms(formula), "factors")
+if (all(rowSums(out) > 0)) {
+  stop("There is not response in formula")
+}
+
 rownames(out)[1]
 
 }
@@ -122,6 +121,7 @@ parse_re_variance <- function(re_error, ntraits) {
 #' @param sigma0 the error variance estimate of the background model
 #' @param verbose a logical indicator of adding process messages
 #' @return a list with the updated parameters in one EM iteration
+#' @importFrom methods new
 #' @importFrom purrr map map2 map_dbl map_int
 #' @importFrom stats predict update model.matrix
 #' @importFrom broom glance
@@ -131,10 +131,9 @@ em_iteration_single <- function(
   if (verbose) message("--starting EM iter")
 
   error_bound <- 1e-4
-  N <- nrow(data)
+  # include_intercept <- attr(stats::terms(formula), "intercept")
 
   # build a mean matrix to build E-step probabilities
-  # include_intercept <- attr(stats::terms(formula), "intercept")
   response <- get_response_name(formula)
 
   # convert to probabilities if they are not
@@ -155,7 +154,7 @@ em_iteration_single <- function(
   sigma <- purrr::map_dbl("sigma")
 
   # need to convert into a matrix for use with Rcpp estep function
-  sigma <- purrr::map(sigma, rep, N)
+  sigma <- purrr::map(sigma, rep, nrow(data))
   sigma <- cbind(sigma0, sigma)
 
   if (verbose) message("--calculating weights")
@@ -165,38 +164,34 @@ em_iteration_single <- function(
   gamma_mat <- pmax(gamma_mat, 1e-12)
   idxs <- seq_len(ncol(gamma_mat))
 
-  X_matrices <- purrr::map(model_list,
-    ~ stats::update(., data = mutate(data, w = 1)))
-  X_matrices <- purrr::map(X_matrices, stats::model.matrix)
-
+  # X_matrices <- purrr::map(model_list,
+  #   ~ stats::update(., data = mutate(data, w = 1)))
+  # X_matrices <- purrr::map(X_matrices, stats::model.matrix)
   # p <- unique(purrr::map_int(X_matrices, ncol))
 
   if (verbose) message("--fitting new models")
-  models <- purrr::map2( idxs[-1], X_matrices, underlying_linear_model,
+  models <- purrr::map2(idxs[-1], X_matrices, underlying_linear_model,
     gamma_mat, error_bound)
 
-  list(
-    "models" = models,
-    "gamma" = gamma_mat,
-    "mu" = mu,
-    "sigma" = sigma)
+  FMIter(nassoc = nrow(data), singletrait = TRUE, models = models,
+    gamma = gamma_mat, mu = mu, sigma = sigma)
 }
 
 #' performs the underlying linear model in FMHighLD
 #' @param i index of the model
-#' @param X covariate matrix
+#' @param cov_mat covariate matrix
 #' @param gamma estep probabilities
 #' @param error_bound numerical constant to avoid zero eigenvalues
 #' @return an `lm` model
 #' @importFrom dplyr mutate
 #' @importFrom stats lm
-underlying_linear_model <- function(i, X, gamma, error_bound) {
+underlying_linear_model <- function(i, cov_mat, gamma, error_bound) {
 
   w <- NULL
   weights <- gamma[, i]
-  eigvals <- eigen(crossprod(X, diag(weights)) %*% X)
+  eigvals <- eigen(crossprod(cov_mat, diag(weights)) %*% cov_mat)
 
-  if (any(eigvals$values <= 0)){
+  if (any(eigvals$values <= 0)) {
     # fix very little eig values, which may cause numerical difficulties
     weights <- pmax(weights, error_bound)
   }
@@ -208,17 +203,17 @@ underlying_linear_model <- function(i, X, gamma, error_bound) {
 
 #' performs the underlying linear model in FMHighLD
 #' @param i index of the model
-#' @param X covariate matrix
+#' @param cov_mat covariate matrix
 #' @param gamma estep probabilities
 #' @param error_bound numerical constant to avoid zero eigenvalues
 #' @return an `lmer` model
 #' @importFrom dplyr mutate
 #' @importFrom lme4 lmer
 #' @importFrom Matrix crossprod
-underlying_lme_model <- function(i, X, gamma, error_bound){
+underlying_lme_model <- function(i, cov_mat, gamma, error_bound) {
 
   weights <- gamma[, i]
-  eigvals <- eigen(Matrix::crossprod(X, diag(weights)) %*% X)
+  eigvals <- eigen(Matrix::crossprod(cov_mat, diag(weights)) %*% cov_mat)
   if (any(eigvals$values <= 0)) {
     weights <- pmax(weights, error_bound)
   }
