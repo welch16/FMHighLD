@@ -13,6 +13,8 @@
 #' v1 <- v1 / sum(v1)
 #' kl(u1, v1)
 kl <- function(p1, p2) {
+  p1 <- p1 / sum(p1)
+  p2 <- p2 / sum(p2)
   sum(p1 * (log(p1) - log(p2)))
 }
 
