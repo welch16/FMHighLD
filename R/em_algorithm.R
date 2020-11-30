@@ -18,7 +18,7 @@ em_iteration_multi <-
   if (verbose) message("--starting EM iter")
 
   error_bound <- 1e-4
-  N <- nrow(data)
+  # N <- nrow(data)
 
   # include_intercept <- attr(stats::terms(formula), "intercept")
   response <- get_response_name(formula)
@@ -134,7 +134,6 @@ em_iteration_single <- function(
   N <- nrow(data)
 
   # build a mean matrix to build E-step probabilities
-
   # include_intercept <- attr(stats::terms(formula), "intercept")
   response <- get_response_name(formula)
 
