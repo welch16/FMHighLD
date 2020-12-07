@@ -145,13 +145,21 @@ setValidity("FMIter",
 #'  being an element in the mixture
 #' @param sigma a matrix with the variances of every normal distribution in the
 #'  mixture.
-#' 
+#'
 #' @aliases FMIter FMIter-class
 #'
 #' @docType class
 #' @rdname FMIter
 #' @importFrom methods new
-FMIter <- function(nassoc, singletrait, models, gamma, mu, sigma) {
+FMIter <- function(nassoc = NULL, singletrait = NULL, models = NULL,
+  gamma = NULL, mu = NULL, sigma = NULL) {
+
+  if (is.null(nassoc)) nassoc <- 0
+  if (is.null(singletrait)) singletrait <- TRUE
+  if (is.null(models)) models <- list()
+  if (is.null(gamma)) gamma <- Matrix::Matrix(nrow = 0, ncol = 0)
+  if (is.null(mu)) mu <- Matrix::Matrix(nrow = 0, ncol = 0)
+  if (is.null(sigma)) sigma <- Matrix::Matrix(nrow = 0, ncol = 0)
 
   methods::new("FMIter",
     nassoc = nassoc, singletrait = singletrait, models = models,
