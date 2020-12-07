@@ -30,7 +30,7 @@ compute_ith_model <- function(i, formula, data, gamma, singletrait = TRUE) {
 #'  FM-HighLD
 #' @param data `data.frame` used for the FM-HighLD model
 #' @param singletrait  a logical indicator determining if the model is for
-#'  multi_trait or single-trait fine-mapping
+#' multi_trait or single-trait fine-mapping
 #' @return a list with the models, and probability matrix for the EM-algorithm
 #' @importFrom Matrix Matrix
 init_iteration <- function(formula, data, singletrait = TRUE) {

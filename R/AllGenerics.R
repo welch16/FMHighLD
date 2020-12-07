@@ -35,3 +35,14 @@ setGeneric("params_all",
 #' @rdname FMRandParam-methods
 setGeneric("params_pickm",
   function(object) standardGeneric("params_pickm"))
+
+#' models methods
+#'
+#' `models` return the list of models estimated in the `FMHighLD` iteration
+#' @param object a `FMIter` object
+#' @return a list of linear models for single trait or linear mixed models for
+#'   the multitrait case
+#' @docType methods
+#' @rdname FMIter-methods
+setGeneric("models",
+  function(object) standardGeneric("models"))
