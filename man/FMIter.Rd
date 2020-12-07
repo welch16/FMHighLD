@@ -6,7 +6,14 @@
 \alias{FMIter}
 \title{`FMIter` object}
 \usage{
-FMIter(nassoc, singletrait, models, gamma, mu, sigma)
+FMIter(
+  nassoc = NULL,
+  singletrait = NULL,
+  models = NULL,
+  gamma = NULL,
+  mu = NULL,
+  sigma = NULL
+)
 }
 \arguments{
 \item{nassoc}{a numeric variable with the number of association tested

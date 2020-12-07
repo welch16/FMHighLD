@@ -20,7 +20,6 @@ setClass("FMRandParam",
     
 setValidity("FMRandParam",
   function(object) {
-
     if (is.na(object@strategy)) {
       out <- TRUE
     } else {
@@ -33,7 +32,7 @@ setValidity("FMRandParam",
       } else if (object@strategy == "pick_m") {
         valid_params <- object@prob > 0 & object@prob < 1 &
           object@k > 0 & object@m > 0 &
-          object@m_sel %in% c("any", "large_ld")
+          object@m_sel %in% c("random", "large_ld")
       }
       out <- valid_strat & valid_params
     }
