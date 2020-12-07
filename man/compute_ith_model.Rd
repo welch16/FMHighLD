@@ -4,7 +4,7 @@
 \alias{compute_ith_model}
 \title{Computes the i-th mixture model for fitting the FM-HighLD model}
 \usage{
-compute_ith_model(i, formula, data, gamma, multi_trait = FALSE)
+compute_ith_model(i, formula, data, gamma, singletrait = TRUE)
 }
 \arguments{
 \item{i}{a numeric index, usually i = 2 only that correspond to the causal
@@ -19,7 +19,7 @@ FM-HighLD}
 \item{gamma}{a `Matrix::Matrix` with the conditional probabilities of the
 variants being in each model}
 
-\item{multi_trait}{a logical indicator determining if the model is for
+\item{singletrait}{a logical indicator determining if the model is for
 multi_trait or single-trait fine-mapping}
 }
 \description{

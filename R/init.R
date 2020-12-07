@@ -8,13 +8,13 @@
 #' @param data `data.frame` used for the FM-HighLD model
 #' @param gamma a `Matrix::Matrix` with the conditional probabilities of the
 #'  variants being in each model
-#' @param multi_trait  a logical indicator determining if the model is for
+#' @param singletrait  a logical indicator determining if the model is for
 #'  multi_trait or single-trait fine-mapping
 #' @importFrom stats lm
 #' @importFrom lme4 lmer
-compute_ith_model <- function(i, formula, data, gamma, multi_trait = FALSE) {
+compute_ith_model <- function(i, formula, data, gamma, singletrait = TRUE) {
 
-  if (!multi_trait) {
+  if (singletrait) {
     data$weights <- gamma[, i]
     model <- stats::lm(formula, data = data, weights = weights)
   } else {
@@ -29,11 +29,11 @@ compute_ith_model <- function(i, formula, data, gamma, multi_trait = FALSE) {
 #' @param formula formula used for fitting the underlying linear model used by
 #'  FM-HighLD
 #' @param data `data.frame` used for the FM-HighLD model
-#' @param multi_trait  a logical indicator determining if the model is for
+#' @param singletrait  a logical indicator determining if the model is for
 #'  multi_trait or single-trait fine-mapping
 #' @return a list with the models, and probability matrix for the EM-algorithm
 #' @importFrom Matrix Matrix
-init_iteration <- function(formula, data, multi_trait = FALSE) {
+init_iteration <- function(formula, data, singletrait = TRUE) {
 
   n <- nrow(data)
   gamma_mat <- do.call(rbind, lapply(seq_len(n), function(x)c(1, 1)))
@@ -46,9 +46,9 @@ init_iteration <- function(formula, data, multi_trait = FALSE) {
     compute_ith_model,
     formula, data, gamma, multi_trait)
 
-  list(
-    models = models,
+  FMIter(nassoc = nrow(data), singletrait = singletrait, models = models,
     gamma = gamma_mat)
+
 }
 
 #' Utility to build the formula of the model of the underlying FM-HighLD model
