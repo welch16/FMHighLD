@@ -36,7 +36,7 @@ setGeneric("params_all",
 setGeneric("params_pickm",
   function(object) standardGeneric("params_pickm"))
 
-#' models methods
+#' models method
 #'
 #' `models` return the list of models estimated in the `FMHighLD` iteration
 #' @param object a `FMIter` object
@@ -46,3 +46,15 @@ setGeneric("params_pickm",
 #' @rdname FMIter-methods
 setGeneric("models",
   function(object) standardGeneric("models"))
+  
+#' probmatrix method
+#'
+#' `probmatrix` returns the posterior probability matrix computed in the EM
+#' algorithm latest iteration
+#' @param object a `FMIter` object
+#' @return a `Matrix::Matrix` object with the posterior probabilities computed
+#' in the latest EM iteration
+#' @docType methods
+#' @rdname FMIter-methods
+setGeneric("probmatrix",
+  function(object) standardGeneric("probmatrix"))
