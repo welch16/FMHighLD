@@ -72,14 +72,15 @@ em_iteration_multi <-
   gamma_mat <- pmax(gamma_mat, 1e-12)
   idxs <- seq_len(ncol(gamma_mat))
 
-  # X_matrices <- purrr::map(model_list, stats::model.matrix)
-  # p = X_matrices %>% map_int(ncol) %>% unique()
+  x_matrices <- purrr::map(model_list, stats::model.matrix)
+  # p = x_matrices %>% map_int(ncol) %>% unique()
 
   if (verbose) message("--fitting new models")
-  models <- purrr::map2(idxs[-1], X_matrices, underlying_lme_model,
+  models <- purrr::map2(idxs[-1], x_matrices, underlying_lme_model,
     gamma_mat, error_bound)
 
   group <- NULL
+  x_matrices <- NULL
   FMIter(nassoc = nrow(data), singletrait = FALSE, models = models,
     gamma = gamma_mat, mu = mu, sigma = sigma)
 }
@@ -164,15 +165,16 @@ em_iteration_single <- function(
   gamma_mat <- pmax(gamma_mat, 1e-12)
   idxs <- seq_len(ncol(gamma_mat))
 
-  # X_matrices <- purrr::map(model_list,
-  #   ~ stats::update(., data = mutate(data, w = 1)))
-  # X_matrices <- purrr::map(X_matrices, stats::model.matrix)
+  x_matrices <- purrr::map(model_list,
+    ~ stats::update(., data = mutate(data, w = 1)))
+  x_matrices <- purrr::map(x_matrices, stats::model.matrix)
   # p <- unique(purrr::map_int(X_matrices, ncol))
 
   if (verbose) message("--fitting new models")
-  models <- purrr::map2(idxs[-1], X_matrices, underlying_linear_model,
+  models <- purrr::map2(idxs[-1], x_matrices, underlying_linear_model,
     gamma_mat, error_bound)
 
+  x_matrices <- NULL
   FMIter(nassoc = nrow(data), singletrait = TRUE, models = models,
     gamma = gamma_mat, mu = mu, sigma = sigma)
 }
