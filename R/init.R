@@ -51,6 +51,7 @@ init_iteration <- function(formula, data, singletrait = TRUE) {
 
 }
 
+
 #' Utility to build the formula of the model of the underlying FM-HighLD model
 #' @param response name of the response variable
 #' @param fixed_effects names of the fixed effects of the model
