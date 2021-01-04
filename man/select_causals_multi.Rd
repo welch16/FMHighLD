@@ -4,7 +4,7 @@
 \alias{select_causals_multi}
 \title{Selects the causal variants in the locus for a multi-trait model}
 \usage{
-select_causals_multi(data, model, group, rand_param, cond_res = FALSE)
+select_causals_multi(data, model, group, fm_param, cond_res = FALSE)
 }
 \arguments{
 \item{data}{a `data.frame` used to fit the FM-HighLD model}
@@ -14,7 +14,7 @@ select_causals_multi(data, model, group, rand_param, cond_res = FALSE)
 \item{group}{name of the grouping variable used to pick the causal
 candidates}
 
-\item{rand_param}{configuration parameter used to pick the causal candidate
+\item{fm_param}{configuration parameter used to pick the causal candidate
 per group}
 
 \item{cond_res}{a logical indicating whether to use conditional residuals

@@ -10,7 +10,7 @@ fmhighld_fit(
   annot_matrix,
   ld_clusters,
   singletrait = TRUE,
-  FMRandParam = FMRandParam(),
+  fm_param = FMParam(),
   saveIter = FALSE,
   verbose = FALSE
 )
@@ -33,8 +33,7 @@ variant belongs}
 \item{singletrait}{a logical indicator determining if the model is for
 multi_trait or single-trait fine-mapping}
 
-\item{FMRandParam}{a `FMRandParam` object with the randomization parameters
-to be used when fitting the algorithm}
+\item{fm_param}{a `FMParam` object with the parameters used to run `FMHighLD`}
 
 \item{saveIter}{a logical indicator determining whether the iteration data is
 going to be returned}

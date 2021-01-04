@@ -4,14 +4,14 @@
 \alias{causal_rule}
 \title{Applies the causal selection rule to the residual vector}
 \usage{
-causal_rule(data, residuals, rand_param, to_group)
+causal_rule(data, residuals, fm_param, to_group)
 }
 \arguments{
 \item{data}{a `data.frame` used to fit the FM-HighLD model}
 
 \item{residuals}{a vector of residuals for all the SNPs}
 
-\item{rand_param}{configuration parameter used to pick the causal candidate
+\item{fm_param}{configuration parameter used to pick the causal candidate
 per group}
 
 \item{to_group}{names of the grouping variable used to pick the causal

@@ -4,7 +4,7 @@
 \alias{select_causals_single}
 \title{Selects the causal variants in the locus for a single-trait model}
 \usage{
-select_causals_single(data, model, group, rand_param)
+select_causals_single(data, model, group, fm_param)
 }
 \arguments{
 \item{data}{a `data.frame` used to fit the FM-HighLD model}
@@ -14,7 +14,7 @@ select_causals_single(data, model, group, rand_param)
 \item{group}{name of the grouping variable used to pick the causal
 candidates}
 
-\item{rand_param}{configuration parameter used to pick the causal candidate
+\item{fm_param}{configuration parameter used to pick the causal candidate
 per group}
 }
 \description{

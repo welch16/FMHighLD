@@ -16,15 +16,14 @@
 #'  variant belongs
 #' @param singletrait  a logical indicator determining if the model is for
 #' multi_trait or single-trait fine-mapping
-#' @param FMRandParam a `FMRandParam` object with the randomization parameters
-#'  to be used when fitting the algorithm
+#' @param fm_param a `FMParam` object with the parameters used to run `FMHighLD`
 #' @param saveIter a logical indicator determining whether the iteration data is
 #'  going to be returned
 #' @param verbose a logical indicator determining whether messages are going to
 #'  be used
 #' @return results
 fmhighld_fit <- function(formula, response, annot_matrix, ld_clusters,
-  singletrait = TRUE, FMRandParam = FMRandParam(), saveIter = FALSE,
+  singletrait = TRUE, fm_param = FMParam(), saveIter = FALSE,
   verbose = FALSE) {
 
   stopifnot(
@@ -39,13 +38,15 @@ fmhighld_fit <- function(formula, response, annot_matrix, ld_clusters,
 
 
   # init algorithm parameteres
-  error_bound <- 1e-4
   iter <- 0
-  max_iter <- 1e3
-  tol <- 1e-6
+  error_bound <- error_bound(fm_param)
+  max_iter <- max_iter(fm_param)
+  min_tol <- min_tol(fm_param)
 
   if (saveIter) {
     states <- list()
+  } else {
+    states <- NULL
   }
 
   init <- init_iteration(formula, data, singletrait)

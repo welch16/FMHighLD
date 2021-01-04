@@ -3,22 +3,28 @@
 NULL
 
 
-#' @rdname FMRandParam
-setClass("FMRandParam",
+#' @rdname FMParam
+setClass("FMParam",
   representation = representation(
     strategy = "character",
     prob = "numeric",
     k = "numeric",
     m = "numeric",
-    m_sel = "character"),
+    m_sel = "character",
+    error_bound = "numeric",
+    max_iter = "numeric",
+    min_tol = "numeric"),
   prototype = prototype(
     strategy = NA_character_,
     prob = NA_real_,
     k = NA_integer_,
     m = NA_integer_,
-    m_sel = NA_character_))
+    m_sel = NA_character_,
+    error_bound = 1e-4,
+    max_iter = 100,
+    min_tol = 1e-6))
     
-setValidity("FMRandParam",
+setValidity("FMParam",
   function(object) {
     if (is.na(object@strategy)) {
       out <- TRUE
@@ -36,14 +42,16 @@ setValidity("FMRandParam",
       }
       out <- valid_strat & valid_params
     }
+    out <- out & object@error_bound > 0 & object@error_bound < 1 &
+      object@max_iter > 1 & object@min_tol > 0 & object@min_tol < 1
     out
   }
 )
 
 
-#' Constructor for the `FMRandParam` class
+#' Constructor for the `FMParam` class
 #'
-#' `FMRandParam` contains the configuration for randomized selection of causal
+#' `FMParam` contains the configuration for randomized selection of causal
 #' candidate variants
 #'
 #' @param strategy name for the randomization strategy to be used. It could be
@@ -65,31 +73,41 @@ setValidity("FMRandParam",
 #' By default, it will pick the `m` groups randomly. Alternatively, it could
 #' also select the `m` groups by their highest average ld score. Either one of
 #' `random` or `large_ld`.
-#' @return A `FMRandParam` object
+#' @param error_bound a double constant indicating the min value used to avoid
+#'  zero denominators
+#' @param max_iter the max. number of iteration by the algorithm used to stop
+#'  the algorithm
+#' @param min_tol the min. tolerance used to stop the algorithm
+#' @return A `FMParam` object with the `FMHighLD` algorithm configuration
 #' @export
 #' @importFrom methods new
 #' @importFrom stringr str_to_lower
-FMRandParam <- function(strategy = NULL, prob = NULL, k = NULL,
-  m = NULL, m_sel = NULL) {
+FMParam <- function(strategy = NULL, prob = NULL, k = NULL,
+  m = NULL, m_sel = NULL, error_bound = 1e-4, max_iter = 100,
+  min_tol = 1e-6) {
 
   if (is.null(strategy)) {
-    out <- methods::new("FMRandParam", strategy = "none")
+    out <- methods::new("FMParam", strategy = "none",
+        error_bound = error_bound, max_iter = max_iter, min_tol = min_tol)
   } else {
     strategy <- stringr::str_to_lower(strategy)
     if (strategy == "none") {
-      out <- methods::new("FMRandParam", strategy = "none")
+      out <- methods::new("FMParam", strategy = "none",
+        error_bound = error_bound, max_iter = max_iter, min_tol = min_tol)
     } else if (strategy == "all") {
       if (is.null(prob)) prob <- 0.95
       if (is.null(k)) k <- 2
-      out <- methods::new("FMRandParam", strategy = "all", prob = prob, k = k)
+      out <- methods::new("FMParam", strategy = "all", prob = prob, k = k,
+        error_bound = error_bound, max_iter = max_iter, min_tol = min_tol)
     } else if (strategy == "pick_m") {
       if (is.null(prob)) prob <- 0.95
       if (is.null(k)) k <- 2
       if (is.null(m)) m <- 1
       if (is.null(m_sel)) m_sel <- "random"
       m_sel <- stringr::str_to_lower(m_sel)
-      out <- methods::new("FMRandParam", strategy = "pick_m", prob = prob,
-        k = k, m = m, m_sel = m_sel)
+      out <- methods::new("FMParam", strategy = "pick_m", prob = prob,
+        k = k, m = m, m_sel = m_sel, error_bound = error_bound,
+        max_iter = max_iter, min_tol = min_tol)
     }
   }
   out

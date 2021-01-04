@@ -43,10 +43,10 @@ build_design_matrix <- function(data, beta) {
 #' @param model a fitted model with the previously selected causal candidates
 #' @param group name of the grouping variable used to pick the causal
 #'  candidates
-#' @param rand_param configuration parameter used to pick the causal candidate
+#' @param fm_param configuration parameter used to pick the causal candidate
 #'  per group
 #' @importFrom stats formula terms coef model.matrix
-select_causals_single <- function(data, model, group, rand_param) {
+select_causals_single <- function(data, model, group, fm_param) {
 
   model_formula <- stats::formula(model)
   response <- as.character(model_formula)[2]
@@ -55,7 +55,7 @@ select_causals_single <- function(data, model, group, rand_param) {
   fitted <- as.numeric(design_matrix %*% beta)
   residuals <- data[[response]] - fitted
 
-  causal_rule(data, residuals, rand_param, group)
+  causal_rule(data, residuals, fm_param, group)
 }
 
 #' Selects the causal variants in the locus for a multi-trait model
@@ -63,14 +63,14 @@ select_causals_single <- function(data, model, group, rand_param) {
 #' @param model a fitted model with the previously selected causal candidates
 #' @param group name of the grouping variable used to pick the causal
 #'  candidates
-#' @param rand_param configuration parameter used to pick the causal candidate
+#' @param fm_param configuration parameter used to pick the causal candidate
 #'  per group
 #' @param cond_res a logical indicating whether to use conditional residuals
 #'  of the linear mixed model
 #' @importFrom stats formula
 #' @importFrom lme4 fixef
 select_causals_multi <- function(data, model, group,
-  rand_param, cond_res = FALSE) {
+  fm_param, cond_res = FALSE) {
 
   model_formula <- stats::formula(model)
   response <- as.character(model_formula)[2]
@@ -85,7 +85,7 @@ select_causals_multi <- function(data, model, group,
 
   }
 
-  causal_rule(data, residuals, rand_param, group)
+  causal_rule(data, residuals, fm_param, group)
 }
 
 
@@ -94,45 +94,45 @@ select_causals_multi <- function(data, model, group,
 #' @param residuals a vector of residuals for all the SNPs
 #' @param to_group names of the grouping variable used to pick the causal
 #'  candidates
-#' @param rand_param configuration parameter used to pick the causal candidate
+#' @param fm_param configuration parameter used to pick the causal candidate
 #'  per group
 #' @importFrom dplyr select group_by mutate summarize ungroup bind_rows
 #' @importFrom dplyr top_n sample_n filter inner_join anti_join
 #' @importFrom tidyselect one_of
 #' @importFrom nnet which.is.max
-causal_rule <- function(data, residuals, rand_param, to_group) {
+causal_rule <- function(data, residuals, fm_param, to_group) {
 
   new_data <- dplyr::select(SNP, tidyselect::one_of(to_group))
   new_data <- dplyr::mutate(new_data, res_seq = residuals ^ 2)
   new_data <- dplyr::group_by(new_data, to_group)
 
-  if (is.null(rand_param)) {
+  if (is.null(fm_param)) {
     out <- dplyr::summarize(new_data,
       which_snp = SNP[nnet::which.is.max(-res_seq)], .groups = "drop")
-  } else if (rand_param$strat == "all") {
+  } else if (fm_param$strat == "all") {
 
     out <- dplyr::summarize(new_data,
       which_snp =
-        SNP[select_kth_random(res_seq, rand_param$prob, rand_param$select)],
+        SNP[select_kth_random(res_seq, fm_param$prob, fm_param$select)],
         .groups = "drop")
 
-  } else if (rand_param$strat == "pick_M") {
+  } else if (fm_param$strat == "pick_M") {
 
     out <- dplyr::summarize(new_data,
       n = n(),
       which_snp = SNP[nnet::which.is.max(-res_seq)])
 
-    if (rand_param$which == "any") {
+    if (fm_param$which == "any") {
 
       picks <- dplyr::ungroup(out)
       picks <- dplyr::filter(picks, n > 1)
       picks <- dplyr::select(picks, -n, -which_snp)
-      picks <- dplyr::sample_n(picks, rand_param$M)
+      picks <- dplyr::sample_n(picks, fm_param$M)
 
-    } else if (rand_param$which == "largeLD") {
+    } else if (fm_param$which == "largeLD") {
 
       picks <- dplyr::ungroup(out)
-      picks <- dplyr::top_n(picks, rand_param$M, wt = n)
+      picks <- dplyr::top_n(picks, fm_param$M, wt = n)
       picks <- dplyr::select(picks, -n, -which_snp)
 
     }
@@ -141,7 +141,7 @@ causal_rule <- function(data, residuals, rand_param, to_group) {
     pick_data <- dplyr::group_by(pick_data, !! rlang::syms(to_group))
     pick_data <- dplyr::summarize(pick_data,
       which_snp =
-        SNP[select_kth_random(res_seq, rand_param$prob, rand_param$select)],
+        SNP[select_kth_random(res_seq, fm_param$prob, fm_param$select)],
       .groups = "drop")
 
     out <- dplyr::ungroup(out)

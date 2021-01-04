@@ -2,10 +2,13 @@
 #' strategy method
 #'
 #' `strategy` returns the randomization strategy
-#' @param object A `FMRandParam` object.
+#' @param object A `FMParam` object.
 #' @return The randomization strategy to be used by `FMHighLD`
 #' @docType methods
-#' @rdname FMRandParam-methods
+#' @rdname FMParam-methods
+#' @export
+#' @examples
+#' strategy(FMParam())
 setGeneric("strategy",
   function(object) standardGeneric("strategy"))
 
@@ -14,11 +17,14 @@ setGeneric("strategy",
 #' `params_all` returns a list with the randomization probability to be used
 #' by `FMHighLD` and the  absolute residual rank to select another causal
 #' candidate
-#' @param object A `FMRandParam` object.
+#' @param object A `FMParam` object.
 #' @return The randomization probability to be used by `FMHighLD` and the
 #' absolute residual rank to select another causal candidate
 #' @docType methods
-#' @rdname FMRandParam-methods
+#' @rdname FMParam-methods
+#' @export
+#' @examples
+#' params_all(FMParam(strategy = "all", prob = .9, k = 2))
 setGeneric("params_all",
   function(object) standardGeneric("params_all"))
 
@@ -28,13 +34,58 @@ setGeneric("params_all",
 #' be used by `FMHighLD`, the  absolute residual rank to select another
 #' causal candidate, the number of ld groups to apply the randomization
 #' strategy and the method used to pick those ld groups
-#' @param object A `FMRandParam` object.
+#' @param object A `FMParam` object.
 #' @return The randomization probability to be used by `FMHighLD` and the
 #' absolute residual rank to select another causal candidate
 #' @docType methods
-#' @rdname FMRandParam-methods
+#' @rdname FMParam-methods
+#' @export
+#' @examples
+#' params_pickm(FMParam(strategy = "pick_m", prob = .9, k = 2))
 setGeneric("params_pickm",
   function(object) standardGeneric("params_pickm"))
+
+#' error_bound method
+#'
+#' `error_bound` returns a constant indicating the min. values used to avoid
+#' zero denominators
+#' @param object a `FMParam` object
+#' @return the error bound
+#' @docType methods
+#' @rdname FMParam-methods
+#' @export
+#' @examples
+#' error_bound(FMParam())
+setGeneric("error_bound",
+  function(object) standardGeneric("error_bound"))
+
+#' max_iter method
+#'
+#' `max_iter` returns the maximum number of iteration used by the FMHighLD
+#' algorithm
+#' @param object a `FMParam` object
+#' @return the max. number of iterations
+#' @docType methods
+#' @rdname FMParam-methods
+#' @export
+#' @examples
+#' max_iter(FMParam())
+setGeneric("max_iter",
+  function(object) standardGeneric("max_iter"))
+
+#' min_tol method
+#'
+#' `min_tol` returns the minimum tolerance used by the FMHighLD
+#' algorithm
+#' @param object a `FMParam` object
+#' @return the max. number of iterations
+#' @docType methods
+#' @rdname FMParam-methods
+#' @export
+#' @examples
+#' min_tol(FMParam())
+setGeneric("min_tol",
+  function(object) standardGeneric("min_tol"))
 
 #' models method
 #'

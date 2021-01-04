@@ -5,7 +5,7 @@
 \title{Performs an Expectation-Maximization iterations for the single
 trait model}
 \usage{
-em_iteration_single(formula, data, pi, model_list, sigma0, verbose)
+em_iteration_single(formula, data, pi, model_list, sigma0, fm_param, verbose)
 }
 \arguments{
 \item{formula}{a formula object with the underlying linear model}
@@ -17,6 +17,9 @@ em_iteration_single(formula, data, pi, model_list, sigma0, verbose)
 \item{model_list}{a list with the underlying linear models of FMHighLD}
 
 \item{sigma0}{the error variance estimate of the background model}
+
+\item{fm_param}{configuration parameter used to pick the causal candidate
+per group}
 
 \item{verbose}{a logical indicator of adding process messages}
 }

@@ -4,6 +4,8 @@
 #' @param pi a vector of probabilities in the FMHighLD mixture part
 #' @param model_list a list with the underlying linear models of FMHighLD
 #' @param sigma0 the error variance estimate of the background model
+#' @param fm_param configuration parameter used to pick the causal candidate
+#'  per group
 #' @param verbose a logical indicator of adding process messages
 #' @return a list with the updated parameters in one EM iteration
 #' @importFrom methods new
@@ -14,11 +16,11 @@
 #' @importFrom Matrix crossprod Matrix
 #' @importFrom stats model.matrix
 em_iteration_multi <-
-  function(formula, data, pi, model_list, sigma0, verbose = TRUE) {
+  function(formula, data, pi, model_list, sigma0, fm_param, verbose = TRUE) {
 
   if (verbose) message("--starting EM iter")
 
-  error_bound <- 1e-4
+  error_bound <- error_bound(fm_param)
   # include_intercept <- attr(stats::terms(formula), "intercept")
   response <- get_response_name(formula)
 
@@ -85,22 +87,6 @@ em_iteration_multi <-
     gamma = gamma_mat, mu = mu, sigma = sigma)
 }
 
-#' Gets the name of the response based on the formula
-#' @param formula a formula object with the underlying linear / linear mixed
-#' model
-#' @return the name of the response
-#' @importFrom stats formula
-get_response_name <- function(formula) {
-
-out <- attr(stats::terms(formula), "factors")
-if (all(rowSums(out) > 0)) {
-  stop("There is not response in formula")
-}
-
-rownames(out)[1]
-
-}
-
 #' Parses the random error variance matrix
 #' @param re_error estimates of the RE errors
 #' @param ntraits integer with the number of trais
@@ -120,6 +106,8 @@ parse_re_variance <- function(re_error, ntraits) {
 #' @param pi a vector of probabilities in the FMHighLD mixture part
 #' @param model_list a list with the underlying linear models of FMHighLD
 #' @param sigma0 the error variance estimate of the background model
+#' @param fm_param configuration parameter used to pick the causal candidate
+#'  per group
 #' @param verbose a logical indicator of adding process messages
 #' @return a list with the updated parameters in one EM iteration
 #' @importFrom methods new
@@ -127,11 +115,11 @@ parse_re_variance <- function(re_error, ntraits) {
 #' @importFrom stats predict update model.matrix
 #' @importFrom broom glance
 em_iteration_single <- function(
-  formula, data, pi, model_list, sigma0, verbose) {
+  formula, data, pi, model_list, sigma0, fm_param, verbose) {
 
   if (verbose) message("--starting EM iter")
 
-  error_bound <- 1e-4
+  error_bound <- error_bound(fm_param)
   # include_intercept <- attr(stats::terms(formula), "intercept")
 
   # build a mean matrix to build E-step probabilities

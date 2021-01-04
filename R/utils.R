@@ -67,3 +67,25 @@ check_variant_names <- function(response, annot_matrix, ld_clusters) {
   variant_names_exists & resp_annot_names & resp_ldclust_names
 
 }
+
+#' Gets the name of the response based on the formula
+#' @param formula a formula object with the underlying linear / linear mixed
+#' model
+#' @export
+#' @return the name of the response
+#' @importFrom stats formula
+#' @examples
+#' get_response_name(y ~ x)
+#' get_response_name("y ~ x")
+get_response_name <- function(formula) {
+
+if (is.character(formula)) formula <- as.formula(formula)
+
+out <- attr(stats::terms(formula), "factors")
+if (all(rowSums(out) > 0)) {
+  stop("There is not response in formula")
+}
+
+rownames(out)[1]
+
+}
