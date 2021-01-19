@@ -14,8 +14,8 @@ Encoding: UTF-8
 LazyData: true
 ByteCompile: true
 LinkingTo:
-  Rcpp,
-  RcppArmadillo
+    Rcpp,
+    RcppArmadillo
 Imports:
     Rcpp,
     RcppArmadillo,
@@ -39,5 +39,6 @@ RoxygenNote: 7.1.1
 Suggests: 
     knitr,
     rmarkdown,
-    testthat
+    testthat,
+    IRanges
 VignetteBuilder: knitr

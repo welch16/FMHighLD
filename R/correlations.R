@@ -137,8 +137,6 @@ rho_hub_aux <- function(r_max, r_min, power, p) {
   c(1, rho_vec)
 }
 
-
-
 #' Calculates a Toeplitz matrix with values descending from a user specified
 #' range of correlations per block. The matrix has a block diagonal structure
 #' and the size and base correlation for each block is user specified.

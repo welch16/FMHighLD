@@ -1,3 +1,6 @@
+library(IRanges)
+library(GenomicRanges)
+
 mat <- Matrix::bdiag(matrix(rep(1, 9), nrow = 3),
   matrix(rep(.8, 16), nrow = 4))
 mat <- as.matrix(mat)
