@@ -5,6 +5,8 @@ Description: What the package does (one paragraph).
 Authors@R: c(
   person("Sunduz", "Keles", email = "keles@stat.wisc.edu",
     role = "aut"),
+  person("Kwangmoon", "Park", email = "kpark243@wisc.edu",
+    role = c("aut", "ctb")),
   person("Rene", "Welch", email = "rwelch2@wisc.edu",
     role = c("aut", "cre")))
 License: MIT + file LICENSE
@@ -29,7 +31,10 @@ Imports:
     tidyselect,
     methods,
     purrr,
-    rlang
+    rlang,
+    igraph,
+    tibble,
+    S4Vectors
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,

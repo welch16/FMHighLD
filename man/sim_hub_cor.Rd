@@ -46,6 +46,6 @@ rho_hub = c(.9, .7)
 tau_hub = c( (.9 - .7) / (10-2), (.7-.6)/(5-2))
 eps_hub = min(1-(rho_hub) - 0.75*(tau_hub) ) - .01
 sim_hub_cor(block_sizes = c(10, 5),
-max_corrs = rho_hub, min_corrs = c(.7,.6),
+ max_corrs = rho_hub, min_corrs = c(.7,.6),
  power = 1, epsilon = eps_hub, eidim=2)
 }

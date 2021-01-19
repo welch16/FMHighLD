@@ -158,7 +158,7 @@ rho_hub_aux <- function(r_max, r_min, power, p) {
 #' tau_hub = c( (.9 - .7) / (10-2), (.7-.6)/(5-2))
 #' eps_hub = min(1-(rho_hub) - 0.75*(tau_hub) ) - .01
 #' sim_hub_cor(block_sizes = c(10, 5),
-#' max_corrs = rho_hub, min_corrs = c(.7,.6),
+#'  max_corrs = rho_hub, min_corrs = c(.7,.6),
 #'  power = 1, epsilon = eps_hub, eidim=2)
 #' @note Based on Hardin et al, "A method for generating realistic
 #' correlation matrices", Annals of Applied Statistics (2012)
@@ -192,4 +192,99 @@ sim_hub_cor <- function(
   diag(big_cor) <- 1 - epsilon
   noise_cor(big_cor, epsilon, eidim)
 
+}
+
+
+#' Get the LD clusters out of an LD matrix
+#' @param ld_matrix a square matrix with the squared correlation between every
+#'  pair of snps in a locus.
+#' @param min_r2 min. R^2 for two snps to be in the same LD cluster
+#' @param snps a named position vector, `IRanges::IRanges` or
+#'  `GRanges::GenomicRanges` object to account for genomic distance between
+#'  snps when clustering them.
+#' @param max_dist max. distance between snps. When the snps vector is `NULL`.
+#'  The function will assume that the distance is one between adjacent snps.
+#' @param tidy a logical indicator to return a `tibble::tibble` with `snp` and
+#'  `cluster` columns
+#' @return a membership ld cluster vector
+#' @export
+#' @importFrom S4Vectors start
+#' @importFrom igraph clusters graph_from_adjacency_matrix
+#' @importFrom rlang set_names
+#' @importFrom tibble tibble
+#' @importFrom stringr str_c
+#' @importFrom stats dist
+#' @examples
+#' set.seed(123)
+#' rho_hub = c(.9, .7)
+#' tau_hub = c( (.9 - .7) / (10-2), (.7-.6)/(5-2))
+#' eps_hub = min(1-(rho_hub) - 0.75*(tau_hub) ) - .01
+#' corrmat <- sim_hub_cor(block_sizes = c(10, 5),
+#'  max_corrs = rho_hub, min_corrs = c(.7,.6),
+#'  power = 1, epsilon = eps_hub, eidim=2)
+#' get_ld_clusters(corrmat^2, .8)
+#' rownames(corrmat) <- colnames(corrmat) <- letters[seq_len(nrow(corrmat))]
+#' get_ld_clusters(corrmat^2, .8)
+#' position <- sort(runif(nrow(corrmat), min = 10, max = 15))
+#' names(position) <- letters[seq_along(position)]
+#' get_ld_clusters(corrmat^2, .8, snps = position, max_dist = .5)
+#' position <- IRanges::IRanges(start = position, width = 1)
+#' names(position) <- letters[seq_along(position)]
+#' get_ld_clusters(corrmat^2, .8, snps = position, max_dist = .5, tidy = TRUE)
+#' position <- GenomicRanges::GRanges(seqnames = "chrom", ranges = position)
+#' get_ld_clusters(corrmat^2, .8, snps = position, max_dist = .3, tidy = TRUE)
+get_ld_clusters <- function(ld_matrix, min_r2, snps = NULL, max_dist = Inf,
+  tidy = FALSE) {
+
+  stopifnot(min_r2 > 0, min_r2 <= 1, nrow(ld_matrix) == ncol(ld_matrix))
+  stopifnot(! is.character(snps))
+
+  if (is.null(rownames(ld_matrix)) & is.null(colnames(ld_matrix))) {
+
+    snp_names <- stringr::str_c("snp", seq_len(nrow(ld_matrix)))
+    rownames(ld_matrix) <- snp_names
+    colnames(ld_matrix) <- snp_names
+
+  } else if (is.null(rownames(ld_matrix))) {
+
+    rownames(ld_matrix) <- colnames(ld_matrix)
+
+  } else if (is.null(colnames(ld_matrix))) {
+
+    colnames(ld_matrix) <- rownames(ld_matrix)
+
+  } else {
+
+    stopifnot(identical(sort(rownames(ld_matrix)), sort(colnames(ld_matrix))))
+
+  }
+
+
+  ld_adj <- ld_matrix >= min_r2
+
+  if (!is.null(snps)) {
+
+    if (class(snps) %in% c("IRanges", "GRanges")) {
+      position_dist <- S4Vectors::start(snps)
+      position_dist <- as.matrix(stats::dist(position_dist,
+        method = "manhattan"))
+    } else {
+      position_dist <- as.matrix(stats::dist(snps), method = "manhattan")
+    }
+
+    ld_adj <- ld_adj & position_dist <= max_dist
+
+  }
+
+  ld_graph <- igraph::graph_from_adjacency_matrix(ld_adj)
+  ld_clusters <- igraph::clusters(ld_graph)
+
+  ld_out <- ld_clusters$membership
+  ld_out <- rlang::set_names(stringr::str_c("ld", ld_out), names(ld_out))
+
+  if (tidy) {
+    ld_out <- tibble::tibble(snp = names(ld_out), ld_cluster = ld_out)
+  }
+
+  return(ld_out)
 }
