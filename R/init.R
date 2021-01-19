@@ -74,7 +74,7 @@ init_iteration <- function(formula, data, singletrait = TRUE) {
 build_formula <- function(response, fixed_effects, fixed_intercept,
   random_effect_group = NULL, random_effects, random_intercept) {
 
-  collapse_sign <- "+"
+  collapse_sign <- " + "
 
   if (is.null(random_effect_group)) {
     out_formula <- glue::glue(
