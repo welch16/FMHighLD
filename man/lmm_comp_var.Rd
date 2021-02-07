@@ -14,7 +14,7 @@ the linear mixed model random effects}
 linear mixed model used by FM-HighLD}
 
 \item{re_error}{a vector with the random effect erros of the linear
-mixed model used by FM-HighL:D}
+mixed model used by FM-HighLD}
 }
 \value{
 The variance matrix of the model

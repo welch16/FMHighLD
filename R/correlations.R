@@ -124,7 +124,7 @@ sim_toeplitz_cor <- function(block_sizes = c(10, 5, 8, 2, 15, 50),
 }
 
 	
-#' Auxiliar function to fill in the rest of the structure of the Hub
+#' Auxiliary function to fill in the rest of the structure of the Hub
 #' correlation matrix
 #' @param r_max is the maximum user specified correlation
 #' @param r_min is the minimum user specified correlation

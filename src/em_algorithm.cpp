@@ -50,7 +50,7 @@ arma::mat estep(
 //' @param residual_error a vector with the residual errors of the
 //'   linear mixed model used by FM-HighLD
 //' @param re_error a vector with the random effect erros of the linear
-//'   mixed model used by FM-HighL:D
+//'   mixed model used by FM-HighLD
 //' @return The variance matrix of the model
 // [[Rcpp::export]]
 arma::mat lmm_comp_var(

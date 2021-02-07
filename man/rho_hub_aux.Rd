@@ -2,7 +2,7 @@
 % Please edit documentation in R/correlations.R
 \name{rho_hub_aux}
 \alias{rho_hub_aux}
-\title{Auxiliar function to fill in the rest of the structure of the Hub
+\title{Auxiliary function to fill in the rest of the structure of the Hub
 correlation matrix}
 \usage{
 rho_hub_aux(r_max, r_min, power, p)
@@ -17,6 +17,6 @@ rho_hub_aux(r_max, r_min, power, p)
 \item{p}{is the size of the correlation block}
 }
 \description{
-Auxiliar function to fill in the rest of the structure of the Hub
+Auxiliary function to fill in the rest of the structure of the Hub
 correlation matrix
 }

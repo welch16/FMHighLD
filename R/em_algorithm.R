@@ -89,7 +89,7 @@ em_iteration_multi <-
 
 #' Parses the random error variance matrix
 #' @param re_error estimates of the RE errors
-#' @param ntraits integer with the number of trais
+#' @param ntraits integer with the number of traits
 #' @return a sparse `Matrix` object
 #' @importFrom Matrix Matrix
 parse_re_variance <- function(re_error, ntraits) {

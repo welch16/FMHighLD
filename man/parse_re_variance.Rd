@@ -9,7 +9,7 @@ parse_re_variance(re_error, ntraits)
 \arguments{
 \item{re_error}{estimates of the RE errors}
 
-\item{ntraits}{integer with the number of trais}
+\item{ntraits}{integer with the number of traits}
 }
 \value{
 a sparse `Matrix` object
