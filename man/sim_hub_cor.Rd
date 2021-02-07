@@ -24,6 +24,8 @@ correlation for each block}
 \item{min_corrs}{A vector of same dimension than `block_sizes` with the min
 correlation for each block}
 
+\item{power}{is the power at which the correlations descend}
+
 \item{epsilon}{maximum entry wise random noise}
 
 \item{eidim}{dimension of the noise space, the smaller the value gets more

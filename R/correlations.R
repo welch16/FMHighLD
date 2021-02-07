@@ -146,6 +146,7 @@ rho_hub_aux <- function(r_max, r_min, power, p) {
 #'  correlation for each block
 #' @param min_corrs A vector of same dimension than `block_sizes` with the min
 #'  correlation for each block
+#' @param power is the power at which the correlations descend
 #' @param epsilon maximum entry wise random noise
 #' @param eidim dimension of the noise space, the smaller the value gets more
 #'   noise
