@@ -53,18 +53,31 @@ jsd <- function(p1, p2) {
 #' @export
 check_variant_names <- function(response, annot_matrix, ld_clusters) {
 
+  if (is.list(response)) {
+    response_names <- purrr::map(response, names)
+    response_names <- unique(unlist(response_names))
+    have_name <- all(!purrr::map_lgl(response, ~ is.null(names(.))))
+  } else {
+    response_names <- names(response)
+    have_name <- TRUE
+  }
+
+  annot_names <- rownames(annot_matrix)
+  ld_names <- names(ld_clusters)
+
   variant_names_exists <- all(
-    ! is.null(names(response)),
-    ! is.null(rownames(annot_matrix)),
-    ! is.null(names(ld_clusters)))
+    ! is.null(response_names),
+    ! is.null(annot_names),
+    ! is.null(ld_names))
 
-  resp_annot_names <- identical(sort(names(response)),
-    sort(rownames(annot_matrix)))
+  resp_annot_names <- identical(sort(response_names),
+    sort(annot_names))
+
   resp_ldclust_names <- identical(
-    sort(names(response)),
-    sort(names(ld_clusters)))
+    sort(response_names),
+    sort(ld_names))
 
-  variant_names_exists & resp_annot_names & resp_ldclust_names
+  have_name & variant_names_exists & resp_annot_names & resp_ldclust_names
 
 }
 
