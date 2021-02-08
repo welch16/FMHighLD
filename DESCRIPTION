@@ -13,6 +13,8 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 ByteCompile: true
+Depends:
+    R (>= 4.0.0)
 LinkingTo:
     Rcpp,
     RcppArmadillo
@@ -37,8 +39,9 @@ Imports:
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,
+    BiocStyle,
     rmarkdown,
     testthat,
     IRanges,
     GenomicRanges    
-VignetteBuilder: knitr
+VignetteBuilder: rmarkdown
