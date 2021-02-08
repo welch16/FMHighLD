@@ -86,7 +86,7 @@ check_variant_names <- function(response, annot_matrix, ld_clusters) {
 #' model
 #' @export
 #' @return the name of the response
-#' @importFrom stats formula
+#' @importFrom stats formula as.formula
 #' @examples
 #' get_response_name(y ~ x)
 #' get_response_name("y ~ x")
