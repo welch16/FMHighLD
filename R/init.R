@@ -33,6 +33,7 @@ compute_ith_model <- function(i, formula, data, gamma, singletrait = TRUE) {
 #' multi_trait or single-trait fine-mapping
 #' @return a list with the models, and probability matrix for the EM-algorithm
 #' @importFrom Matrix Matrix
+#' @importFrom stats predict
 init_iteration <- function(formula, data, singletrait = TRUE) {
 
   n <- nrow(data)
@@ -44,10 +45,10 @@ init_iteration <- function(formula, data, singletrait = TRUE) {
 
   models <- lapply(idxs[-1],
     compute_ith_model,
-    formula, data, gamma, multi_trait)
+    formula, data, gamma_mat, singletrait)
 
   FMIter(nassoc = nrow(data), singletrait = singletrait, models = models,
-    gamma = gamma_mat)
+    gamma = gamma_mat, mu = NULL, sigma = NULL)
 
 }
 
