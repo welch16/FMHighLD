@@ -5,20 +5,17 @@
 \title{Fit the FMHighLD model}
 \usage{
 fmhighld_fit(
-  formula,
   response,
   annot_matrix,
   ld_clusters,
   singletrait = TRUE,
+  skip_causal = FALSE,
   fm_param = FMParam(),
-  saveIter = FALSE,
+  save_iter = FALSE,
   verbose = FALSE
 )
 }
 \arguments{
-\item{formula}{formula used for fitting the underlying linear model used by
-FM-HighLD}
-
 \item{response}{a vector for the `singletrait` case or a named list for
 the multitrait case with an element for each variant. In the multitrait
 case, each element of the list is a named vector where each element
@@ -35,11 +32,11 @@ multi_trait or single-trait fine-mapping}
 
 \item{fm_param}{a `FMParam` object with the parameters used to run `FMHighLD`}
 
-\item{saveIter}{a logical indicator determining whether the iteration data is
-going to be returned}
-
 \item{verbose}{a logical indicator determining whether messages are going to
 be used}
+
+\item{saveIter}{a logical indicator determining whether the iteration data is
+going to be returned}
 }
 \value{
 results

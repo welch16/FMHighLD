@@ -43,5 +43,6 @@ Suggests:
     rmarkdown,
     testthat,
     IRanges,
-    GenomicRanges    
+    GenomicRanges,
+    magrittr
 VignetteBuilder: rmarkdown

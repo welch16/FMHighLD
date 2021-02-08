@@ -1,11 +1,90 @@
+#' Builds a `tibble::tibble` to be used by `FMHighLD`
+#' @param response a vector for the `singletrait` case or a named list for
+#'  the multitrait case with an element for each variant. In the multitrait
+#'  case, each element of the list is a named vector where each element
+#'  is named after the trait for which the association was tested.
+#' @param annot_matrix a matrix with same number of rows as variants and number
+#'  of columns as annotations
+#' @param ld_clusters a character vector with the ld cluster to which each
+#'  variant belongs
+#' @param singletrait  a logical indicator determining if the model is for
+#' multi_trait or single-trait fine-mapping
+#' @return a `tibble::tibble` with at least columns snp, response, ld_cluster
+#'  and the column names of `annot_matrix`. If `singletrait == FALSE`, it will
+#'  also have a `trait column`.
+#' @export
+#' @importFrom tibble tibble as_tibble
+#' @importFrom purrr map map2 partial reduce
+#' @importFrom dplyr mutate bind_rows inner_join
+#' @examples
+#' nsnps <- 10
+#' z <- rlang::set_names(rnorm(nsnps), stringr::str_c("snp", seq_len(nsnps)))
+#' annot <- matrix(rnorm(nsnps), ncol = 1)
+#' rownames(annot) <- names(z)
+#' colnames(annot) <- "annot"
+#' ld_cluster <- sample(stringr::str_c("ld", seq_len(5)), nsnps, replace = TRUE)
+#' names(ld_cluster) <- names(z)
+#' build_fm_tibble(z, annot, ld_cluster, TRUE)
+#' z_list <- list()
+#' z_list[["a"]] <- z[1:3]
+#' z_list[["b"]] <- z[3:5]
+#' z_list[["c"]] <- z[6:10]
+#' build_fm_tibble(z_list, annot, ld_cluster, FALSE)
+build_fm_tibble <- function(response, annot_matrix, ld_clusters, singletrait) {
+
+  fm_tibble <- tibble::tibble(snp = get_snp_names(response, singletrait))
+  if (singletrait) {
+    response_tibble <- tibble::tibble(snp = names(response), response)
+  } else {
+    response_tibble <- purrr::map(response,
+      ~ tibble::tibble(snp = names(.), response = .))
+    response_tibble <- purrr::map2(response_tibble, names(response_tibble),
+      ~ dplyr::mutate(.x, trait = .y))
+    response_tibble <- dplyr::bind_rows(response_tibble)
+  }
+
+  annot_tibble <- as.data.frame(annot_matrix)
+  annot_tibble <- tibble::as_tibble(annot_tibble, rownames = "snp")
+  ld_clust_tibble <- tibble::tibble(snp = names(ld_clusters),
+    ld_cluster = ld_clusters)
+
+  purrr::reduce(list(fm_tibble, response_tibble, annot_tibble, ld_clust_tibble),
+    purrr::partial(dplyr::inner_join, by = "snp"))
+}
 
 
-# set.seed(12345)
+
+#' Gets a sorted vector with the snp names
+#' @param response Either a numeric vector when `singletrait == TRUE` or a
+#'   list with named vectors when `singletrait == FALSE`
+#' @param singletrait  a logical indicator determining if the model is for
+#' multi_trait or single-trait fine-mapping
+#' @return a sorted character vector with the names of all the snps in the
+#'   response
+#' @importFrom purrr map
+#' @export
+#' @examples
+#' nsnps <- 10
+#' z <- rlang::set_names(rnorm(nsnps), stringr::str_c("snp", seq_len(nsnps)))
+#' get_snp_names(z, TRUE)
+#' z_list <- list()
+#' z_list[["a"]] <- z[1:3]
+#' z_list[["b"]] <- z[3:5]
+#' z_list[["c"]] <- z[6:10]
+#' get_snp_names(z_list,  FALSE)
+get_snp_names <- function(response, singletrait) {
+
+  if (singletrait) {
+    snp_names <- names(response)
+  } else {
+    snp_names <- purrr::map(response, names)
+    snp_names <- unique(do.call(c, snp_names))
+  }
+  sort(snp_names)
+}
 
 
 #' Fit the FMHighLD model
-#' @param formula formula used for fitting the underlying linear model used by
-#'  FM-HighLD
 #' @param response a vector for the `singletrait` case or a named list for
 #'  the multitrait case with an element for each variant. In the multitrait
 #'  case, each element of the list is a named vector where each element
@@ -22,20 +101,36 @@
 #' @param verbose a logical indicator determining whether messages are going to
 #'  be used
 #' @return results
-fmhighld_fit <- function(formula, response, annot_matrix, ld_clusters,
-  singletrait = TRUE, fm_param = FMParam(), saveIter = FALSE,
-  verbose = FALSE) {
+fmhighld_fit <- function(response, annot_matrix, ld_clusters,
+  singletrait = TRUE, skip_causal = FALSE, fm_param = FMParam(),
+  save_iter = FALSE, verbose = FALSE) {
 
-  stopifnot(
-    length(response) == nrow(annot_matrix),
-    length(response) == length(ld_clusters))
+  stopifnot(is.matrix(annot_matrix) | is.vector(annot_matrix))
+  if (is.vector(annot_matrix)) {
+    warning("will convert `annot_matrix` argument into a matrix")
+    annot_matrix <- as.matrix(annot_matrix, ncol = 1)
+  }
 
   same_names <- check_variant_names(response, annot_matrix, ld_clusters)
+
   if (! same_names) {
     warning("There variants are not named or the names don't match, will match
       'response', 'annot_matrix' and 'ld_clusters' by position")
+    if (is.list(response)) {
+      rlang::abort("`response` is a list, please check the variant names")
+    }
+    names(response) <- stringr::str_c("snp", seq_along(response))
+    rownames(annot_matrix) <- names(response)
+    names(ld_clusters) <- names(response)
   }
 
+  snp_names <- get_snp_names(response, singletrait)
+
+  stopifnot(
+    length(snp_names) == nrow(annot_matrix),
+    length(snp_names) == length(ld_clusters))
+
+  fmld_data <- build_fm_tibble(response, annot_matrix, ld_clusters, singletrait)
 
   # init algorithm parameteres
   iter <- 0
@@ -43,18 +138,44 @@ fmhighld_fit <- function(formula, response, annot_matrix, ld_clusters,
   max_iter <- max_iter(fm_param)
   min_tol <- min_tol(fm_param)
 
-  if (saveIter) {
+  if (save_iter) {
     states <- list()
   } else {
     states <- NULL
   }
 
-  init <- init_iteration(formula, data, singletrait)
+  formula <- build_formula("response", colnames(annot_matrix), TRUE)
+  browser()
+  init <- init_iteration(formula, fmld_data, singletrait)
   model_list <- models(init)
-  pi <- colMeans(probmatrix(init))
+  causal_prob <- colMeans(probmatrix(init))
   background_error <- rlang::rep_along(model_list, 1)
   prev_causals <- dplyr::mutate(init_candidates, prob = 0.5)
 
+  continue <- TRUE
+  while (continue) {
+    iter <- iter + 1
+    if (verbose) {
+      message("starting iter ", iter)
+    }
+
+# em_iteration_single <- function(
+#   formula, data, pi, model_list, sigma0, fm_param, verbose) {
+# em_iteration_multi <-
+#   function(formula, data, pi, model_list, sigma0, fm_param, verbose = TRUE) {
+
+
+    if (singletrait) {
+      causal_list <- purrr::map(model_list,
+        ~ select_causals_single(train_data, .x, response, to_group, fm_param))
+    } else {
+      causal_list <- purrr::map(model_list,
+        ~ select_causals_multi(train_data, .x, response, to_group,
+          fm_param, cond_res))
+        }
+
+
+  }
 
 
 }
