@@ -92,7 +92,7 @@ build_formula <- function(response, fixed_effects, fixed_intercept,
       random = stringr::str_c(random_effects, collapse = collapse_sign),
       group = random_effect_group)
   }
-  
+
   as.character(out_formula)
 
 }

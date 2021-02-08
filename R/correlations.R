@@ -258,7 +258,6 @@ get_ld_clusters <- function(ld_matrix, min_r2, snps = NULL, max_dist = Inf,
 
   }
 
-
   ld_adj <- ld_matrix >= min_r2
 
   if (!is.null(snps)) {
