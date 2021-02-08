@@ -141,7 +141,7 @@ setValidity("FMIter",
     } else {
       out <- all(purrr::map_chr(object@models, class) == "lm") |
         all(purrr::map_chr(object@models, class) == "lmerMod")
-      out <- out & object@nassoc == nrow(gamma) & object@nassoc == nrow(mu)
+      out <- out & object@nassoc == nrow(gamma)
     }
     out
 
