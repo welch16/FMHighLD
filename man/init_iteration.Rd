@@ -4,7 +4,7 @@
 \alias{init_iteration}
 \title{Performs the initial iteration of the FM-HighLD model}
 \usage{
-init_iteration(formula, data, singletrait = TRUE)
+init_iteration(formula, data, singletrait, ncausal_mixt)
 }
 \arguments{
 \item{formula}{formula used for fitting the underlying linear model used by
@@ -14,6 +14,8 @@ FM-HighLD}
 
 \item{singletrait}{a logical indicator determining if the model is for
 multi_trait or single-trait fine-mapping}
+
+\item{ncausal_mixt}{the number of mixtures used in the causal models}
 }
 \value{
 a list with the models, and probability matrix for the EM-algorithm

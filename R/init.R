@@ -3,6 +3,8 @@
 #' @param i a numeric index, usually i = 2 only that correspond to the causal
 #'  variants, but the model is performed for a list in case more models are
 #'  being fitted for the locus
+#' @param causal_candidates a vector of the causal candidates selected for each 
+#'  ld cluster
 #' @param formula formula used for fitting the underlying linear model used by
 #'  FM-HighLD
 #' @param data `data.frame` used for the FM-HighLD model
@@ -12,7 +14,10 @@
 #'  multi_trait or single-trait fine-mapping
 #' @importFrom stats lm
 #' @importFrom lme4 lmer
-compute_ith_model <- function(i, formula, data, gamma, singletrait = TRUE) {
+compute_ith_model <- function(i, causal_candidates, formula, data, gamma,
+  singletrait = TRUE) {
+
+  data <- dplyr::filter(data, snp %in% causal_candidates)
 
   if (singletrait) {
     data$weights <- gamma[, i]
@@ -21,6 +26,7 @@ compute_ith_model <- function(i, formula, data, gamma, singletrait = TRUE) {
     weights <- gamma[, i]
     model <- lme4::lmer(formula, data = data, weights = weights)
   }
+  snp <- NULL
   model
 }
 
@@ -31,24 +37,29 @@ compute_ith_model <- function(i, formula, data, gamma, singletrait = TRUE) {
 #' @param data `data.frame` used for the FM-HighLD model
 #' @param singletrait  a logical indicator determining if the model is for
 #' multi_trait or single-trait fine-mapping
+#' @param ncausal_mixt the number of mixtures used in the causal models
 #' @return a list with the models, and probability matrix for the EM-algorithm
 #' @importFrom Matrix Matrix
 #' @importFrom stats predict
-init_iteration <- function(formula, data, singletrait = TRUE) {
+#' @importFrom purrr map_int map2
+init_iteration <- function(formula, data, singletrait, ncausal_mixt) {
 
-  n <- nrow(data)
+  causal_candidates <- init_causal_candidates(data, singletrait, ncausal_mixt)
+
+  n <- unique(purrr::map_int(causal_candidates, length))
   gamma_mat <- do.call(rbind, lapply(seq_len(n), function(x)c(1, 1)))
   gamma_mat <- Matrix::Matrix(gamma_mat)
-
+  rownames(gamma_mat) <- causal_candidates
   p <- ncol(gamma_mat)
   idxs <- seq_len(p)
 
-  models <- lapply(idxs[-1],
+  models <- purrr::map2(idxs[-1], causal_candidates,
     compute_ith_model,
     formula, data, gamma_mat, singletrait)
 
   FMIter(nassoc = nrow(data), singletrait = singletrait, models = models,
-    gamma = gamma_mat, mu = NULL, sigma = NULL)
+    causal_candidates = causal_candidates, gamma = gamma_mat, mu = NULL,
+    sigma = NULL)
 
 }
 

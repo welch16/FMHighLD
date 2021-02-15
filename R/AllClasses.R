@@ -122,6 +122,7 @@ setClass("FMIter",
     nassoc = "numeric",
     singletrait = "logical",
     models = "list",
+    causal_candidates = "list",
     gamma = "Matrix",
     mu = "Matrix",
     sigma = "Matrix"),
@@ -129,6 +130,7 @@ setClass("FMIter",
     nassoc = 0,
     singletrait = TRUE,
     models = list(),
+    causal_candidates = list(),
     gamma = Matrix::Matrix(nrow = 0, ncol = 0),
     mu = Matrix::Matrix(nrow = 0, ncol = 0),
     sigma = Matrix::Matrix(nrow = 0, ncol = 0)))
@@ -156,6 +158,9 @@ setValidity("FMIter",
 #' @param singletrait a logical indicator determininig if we are considering a
 #'  single trait or multiple traits
 #' @param models a list with the models in the mixture
+#' @param causal_candidates a list of the same length as `models` made with
+#'  vectors of causal candidate snps per each valid trait - ld cluster
+#'  combination
 #' @param gamma a matrix with the posterior probabilities of a snps belonging to
 #'  any element in the mixture
 #' @param mu a matrix with the predicted values of every snp with each column
@@ -169,17 +174,19 @@ setValidity("FMIter",
 #' @rdname FMIter
 #' @importFrom methods new
 FMIter <- function(nassoc = NULL, singletrait = NULL, models = NULL,
-  gamma = NULL, mu = NULL, sigma = NULL) {
+  causal_candidates = NULL, gamma = NULL, mu = NULL, sigma = NULL) {
 
   if (is.null(nassoc)) nassoc <- 0
   if (is.null(singletrait)) singletrait <- TRUE
   if (is.null(models)) models <- list()
+  if (is.null(causal_candidates)) causal_candidates <- list()
   if (is.null(gamma)) gamma <- Matrix::Matrix(nrow = 0, ncol = 0)
   if (is.null(mu)) mu <- Matrix::Matrix(nrow = 0, ncol = 0)
   if (is.null(sigma)) sigma <- Matrix::Matrix(nrow = 0, ncol = 0)
 
   methods::new("FMIter",
     nassoc = nassoc, singletrait = singletrait, models = models,
-      gamma = gamma, mu = mu, sigma = sigma)
+      causal_candidates = causal_candidates, gamma = gamma, mu = mu,
+      sigma = sigma)
 
 }

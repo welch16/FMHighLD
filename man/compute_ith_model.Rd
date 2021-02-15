@@ -4,12 +4,22 @@
 \alias{compute_ith_model}
 \title{Computes the i-th mixture model for fitting the FM-HighLD model}
 \usage{
-compute_ith_model(i, formula, data, gamma, singletrait = TRUE)
+compute_ith_model(
+  i,
+  causal_candidates,
+  formula,
+  data,
+  gamma,
+  singletrait = TRUE
+)
 }
 \arguments{
 \item{i}{a numeric index, usually i = 2 only that correspond to the causal
 variants, but the model is performed for a list in case more models are
 being fitted for the locus}
+
+\item{causal_candidates}{a vector of the causal candidates selected for each 
+ld cluster}
 
 \item{formula}{formula used for fitting the underlying linear model used by
 FM-HighLD}

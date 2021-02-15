@@ -10,6 +10,7 @@ FMIter(
   nassoc = NULL,
   singletrait = NULL,
   models = NULL,
+  causal_candidates = NULL,
   gamma = NULL,
   mu = NULL,
   sigma = NULL
@@ -23,6 +24,10 @@ in the experiment}
 single trait or multiple traits}
 
 \item{models}{a list with the models in the mixture}
+
+\item{causal_candidates}{a list of the same length as `models` made with
+vectors of causal candidate snps per each valid trait - ld cluster
+combination}
 
 \item{gamma}{a matrix with the posterior probabilities of a snps belonging to
 any element in the mixture}
