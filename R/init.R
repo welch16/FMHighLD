@@ -53,6 +53,60 @@ init_iteration <- function(formula, data, singletrait = TRUE) {
 }
 
 
+#' Initializes the causal candidates before fitting the model
+#' @param data `data.frame` used for the FM-HighLD model
+#' @param singletrait  a logical indicator determining if the model is for
+#'  multi_trait or single-trait fine-mapping
+#' @param ncausal_mixt the number of mixtures used in the causal models
+#' @return a list of length `ncausal_mixt` with a vector of one causal candida-
+#'  te per ld group (if `singletrait = TRUE`) or per combination of ld_group
+#'  and trait if (`singletrait = FALSE`)
+#' @importFrom rlang syms set_names
+#' @importFrom dplyr group_by sample_n
+#' @importFrom purrr map map2
+#' @importFrom stringr str_c
+#' @export
+#' @examples
+#' nsnps <- 10
+#' z <- rlang::set_names(rnorm(nsnps), stringr::str_c("snp", seq_len(nsnps)))
+#' annot <- matrix(rnorm(nsnps), ncol = 1)
+#' rownames(annot) <- names(z)
+#' colnames(annot) <- "annot"
+#' ld_cluster <- sample(stringr::str_c("ld", seq_len(5)), nsnps, replace = TRUE)
+#' names(ld_cluster) <- names(z)
+#' data <- build_fm_tibble(z, annot, ld_cluster, TRUE)
+#' init_causal_candidates(data, TRUE, 1)
+#' init_causal_candidates(data, TRUE, 2)
+#' z_list <- list()
+#' z_list[["a"]] <- z[1:3]
+#' z_list[["b"]] <- z[3:5]
+#' z_list[["c"]] <- z[6:10]
+#' data = build_fm_tibble(z_list, annot, ld_cluster, FALSE)
+#' init_causal_candidates(data, FALSE, 3)
+init_causal_candidates <- function(data, singletrait, ncausal_mixt) {
+
+  if (singletrait) {
+    data <- dplyr::mutate(data, sample_var = ld_cluster)
+    ld_vars <- "ld_cluster"
+  } else {
+    data <- dplyr::mutate(data,
+      sample_var = stringr::str_c(trait, ld_cluster, sep = ":"))
+    ld_vars <- c("ld_cluster", "trait")
+  }
+
+  stopifnot(all(ld_vars %in% names(data)))
+
+  group_data <- dplyr::group_by(data, !!!rlang::syms(ld_vars))
+  group_data <- replicate(ncausal_mixt, {
+    dplyr::sample_n(group_data, 1)
+  }, simplify = FALSE)
+
+  causal_cand <- purrr::map(group_data, "snp")
+  samp_names <- purrr::map(group_data, "sample_var")
+  purrr::map2(causal_cand, samp_names, rlang::set_names)
+
+}
+
 #' Utility to build the formula of the model of the underlying FM-HighLD model
 #' @param response name of the response variable
 #' @param fixed_effects names of the fixed effects of the model

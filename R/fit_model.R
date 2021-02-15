@@ -52,8 +52,6 @@ build_fm_tibble <- function(response, annot_matrix, ld_clusters, singletrait) {
     purrr::partial(dplyr::inner_join, by = "snp"))
 }
 
-
-
 #' Gets a sorted vector with the snp names
 #' @param response Either a numeric vector when `singletrait == TRUE` or a
 #'   list with named vectors when `singletrait == FALSE`
@@ -83,6 +81,19 @@ get_snp_names <- function(response, singletrait) {
   sort(snp_names)
 }
 
+#' Compute the mixture probabilities from a probabiltiy matrix
+#'
+#' @param prob_matrix a matrix of dimensions nassoc x nmixtures
+#' @return a vector of length nmixtures
+#' @export
+#' @examples
+#' compute_mixture_prob(matrix(rep(1, 100), ncol = 2))
+compute_mixture_prob <- function(prob_matrix) {
+
+  prob_matrix <- as.matrix(prob_matrix)
+  causal_prob <- colMeans(prob_matrix)
+  causal_prob / sum(causal_prob)
+}
 
 #' Fit the FMHighLD model
 #' @param response a vector for the `singletrait` case or a named list for
@@ -94,16 +105,19 @@ get_snp_names <- function(response, singletrait) {
 #' @param ld_clusters a character vector with the ld cluster to which each
 #'  variant belongs
 #' @param singletrait  a logical indicator determining if the model is for
-#' multi_trait or single-trait fine-mapping
+#'  multi_trait or single-trait fine-mapping
+#' @param ncausal_mixt the number of mixtures used in the causal models
+#' @param skip_causal a logical indicator determining whether the function will
+#'  skip the causal selection steps, and only iterate through the EM algorithm
 #' @param fm_param a `FMParam` object with the parameters used to run `FMHighLD`
-#' @param saveIter a logical indicator determining whether the iteration data is
-#'  going to be returned
+#' @param save_iter a logical indicator determining whether the iteration data
+#'  is going to be returned
 #' @param verbose a logical indicator determining whether messages are going to
 #'  be used
 #' @return results
 fmhighld_fit <- function(response, annot_matrix, ld_clusters,
-  singletrait = TRUE, skip_causal = FALSE, fm_param = FMParam(),
-  save_iter = FALSE, verbose = FALSE) {
+  singletrait = TRUE, ncausal_mixt = 1, skip_causal = FALSE,
+  fm_param = FMParam(), save_iter = FALSE, verbose = FALSE) {
 
   stopifnot(is.matrix(annot_matrix) | is.vector(annot_matrix))
   if (is.vector(annot_matrix)) {
@@ -131,6 +145,8 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
     length(snp_names) == length(ld_clusters))
 
   fmld_data <- build_fm_tibble(response, annot_matrix, ld_clusters, singletrait)
+  causal_candidates <- init_causal_candidates(fmld_data, singletrait,
+    ncausal_mixt)
 
   # init algorithm parameteres
   iter <- 0
@@ -148,9 +164,10 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
   browser()
   init <- init_iteration(formula, fmld_data, singletrait)
   model_list <- models(init)
-  causal_prob <- colMeans(probmatrix(init))
+  causal_prob <- compute_mixture_prob(probmatrix(init))
   background_error <- rlang::rep_along(model_list, 1)
-  prev_causals <- dplyr::mutate(init_candidates, prob = 0.5)
+
+  # prev_causals <- dplyr::mutate(init_candidates, prob = 0.5)
 
   continue <- TRUE
   while (continue) {

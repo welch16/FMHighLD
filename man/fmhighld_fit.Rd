@@ -9,6 +9,7 @@ fmhighld_fit(
   annot_matrix,
   ld_clusters,
   singletrait = TRUE,
+  ncausal_mixt = 1,
   skip_causal = FALSE,
   fm_param = FMParam(),
   save_iter = FALSE,
@@ -30,13 +31,18 @@ variant belongs}
 \item{singletrait}{a logical indicator determining if the model is for
 multi_trait or single-trait fine-mapping}
 
+\item{ncausal_mixt}{the number of mixtures used in the causal models}
+
+\item{skip_causal}{a logical indicator determining whether the function will
+skip the causal selection steps, and only iterate through the EM algorithm}
+
 \item{fm_param}{a `FMParam` object with the parameters used to run `FMHighLD`}
+
+\item{save_iter}{a logical indicator determining whether the iteration data
+is going to be returned}
 
 \item{verbose}{a logical indicator determining whether messages are going to
 be used}
-
-\item{saveIter}{a logical indicator determining whether the iteration data is
-going to be returned}
 }
 \value{
 results
