@@ -30,7 +30,6 @@ compute_ith_model <- function(i, causal_candidates, formula, data, gamma,
   model
 }
 
-
 #' Performs the initial iteration of the FM-HighLD model
 #' @param formula formula used for fitting the underlying linear model used by
 #'  FM-HighLD
@@ -49,7 +48,7 @@ init_iteration <- function(formula, data, singletrait, ncausal_mixt) {
   n <- unique(purrr::map_int(causal_candidates, length))
   gamma_mat <- do.call(rbind, lapply(seq_len(n), function(x)c(1, 1)))
   gamma_mat <- Matrix::Matrix(gamma_mat)
-  rownames(gamma_mat) <- causal_candidates
+  rownames(gamma_mat) <- names(causal_candidates)
   p <- ncol(gamma_mat)
   idxs <- seq_len(p)
 

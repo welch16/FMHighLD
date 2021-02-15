@@ -100,48 +100,51 @@ select_causals_multi <- function(data, model, group,
 #' @importFrom dplyr top_n sample_n filter inner_join anti_join
 #' @importFrom tidyselect one_of
 #' @importFrom nnet which.is.max
+#' @importFrom rlang syms
 causal_rule <- function(data, residuals, fm_param, to_group) {
 
-  new_data <- dplyr::select(SNP, tidyselect::one_of(to_group))
+  new_data <- dplyr::select(data, snp, tidyselect::one_of(to_group))
   new_data <- dplyr::mutate(new_data, res_seq = residuals ^ 2)
-  new_data <- dplyr::group_by(new_data, to_group)
+  new_data <- dplyr::group_by(new_data, !!! rlang::syms(to_group))
 
-  if (is.null(fm_param)) {
+  if (strategy(fm_param) == "none") {
     out <- dplyr::summarize(new_data,
-      which_snp = SNP[nnet::which.is.max(-res_seq)], .groups = "drop")
-  } else if (fm_param$strat == "all") {
+      which_snp = snp[nnet::which.is.max(-res_seq)], .groups = "drop")
+  } else if (strategy(fm_param) == "all") {
 
     out <- dplyr::summarize(new_data,
       which_snp =
-        SNP[select_kth_random(res_seq, fm_param$prob, fm_param$select)],
+        snp[select_kth_random(res_seq, params_all(fm_param)$prob,
+          params_all(fm_param)$k)],
         .groups = "drop")
 
-  } else if (fm_param$strat == "pick_M") {
+  } else if (strategy(fm_param) == "pick_m") {
 
     out <- dplyr::summarize(new_data,
       n = n(),
-      which_snp = SNP[nnet::which.is.max(-res_seq)])
+      which_snp = snp[nnet::which.is.max(-res_seq)])
 
-    if (fm_param$which == "any") {
+    if (params_pickm(fm_param)$msel == "random") {
 
       picks <- dplyr::ungroup(out)
       picks <- dplyr::filter(picks, n > 1)
       picks <- dplyr::select(picks, -n, -which_snp)
-      picks <- dplyr::sample_n(picks, fm_param$M)
+      picks <- dplyr::sample_n(picks, params_pickm(fm_param)$m)
 
-    } else if (fm_param$which == "largeLD") {
+    } else if (params_pickm(fm_param)$msel == "large_ld") {
 
       picks <- dplyr::ungroup(out)
-      picks <- dplyr::top_n(picks, fm_param$M, wt = n)
+      picks <- dplyr::top_n(picks, params_pickm(fm_param)$m, wt = n)
       picks <- dplyr::select(picks, -n, -which_snp)
 
     }
 
     pick_data <- dplyr::inner_join(picks, new_data, by = to_group)
-    pick_data <- dplyr::group_by(pick_data, !! rlang::syms(to_group))
+    pick_data <- dplyr::group_by(pick_data, !!! rlang::syms(to_group))
     pick_data <- dplyr::summarize(pick_data,
       which_snp =
-        SNP[select_kth_random(res_seq, fm_param$prob, fm_param$select)],
+        snp[select_kth_random(res_seq, params_pickm(fm_param)$prob,
+          params_pickm(fm_param)$k)],
       .groups = "drop")
 
     out <- dplyr::ungroup(out)
@@ -151,7 +154,7 @@ causal_rule <- function(data, residuals, fm_param, to_group) {
 
   }
 
-  n <- which_snp <- SNP <- res_seq <- NULL
+  n <- which_snp <- snp <- res_seq <- NULL
 
   out
 }

@@ -144,9 +144,8 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
     length(snp_names) == nrow(annot_matrix),
     length(snp_names) == length(ld_clusters))
 
+  ## init data structure
   fmld_data <- build_fm_tibble(response, annot_matrix, ld_clusters, singletrait)
-  causal_candidates <- init_causal_candidates(fmld_data, singletrait,
-    ncausal_mixt)
 
   # init algorithm parameteres
   iter <- 0
@@ -154,15 +153,14 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
   max_iter <- max_iter(fm_param)
   min_tol <- min_tol(fm_param)
 
-  if (save_iter) {
-    states <- list()
-  } else {
-    states <- NULL
-  }
+  # if (save_iter) {
+  #   states <- list()
+  # } else {
+  #   states <- NULL
+  # }
 
   formula <- build_formula("response", colnames(annot_matrix), TRUE)
-  browser()
-  init <- init_iteration(formula, fmld_data, singletrait)
+  init <- init_iteration(formula, fmld_data, singletrait, ncausal_mixt)
   model_list <- models(init)
   causal_prob <- compute_mixture_prob(probmatrix(init))
   background_error <- rlang::rep_along(model_list, 1)
@@ -172,9 +170,9 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
   continue <- TRUE
   while (continue) {
     iter <- iter + 1
-    if (verbose) {
-      message("starting iter ", iter)
-    }
+    # if (verbose) {
+    #   message("starting iter ", iter)
+    # }
 
 # em_iteration_single <- function(
 #   formula, data, pi, model_list, sigma0, fm_param, verbose) {
@@ -184,13 +182,17 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
 
     if (singletrait) {
       causal_list <- purrr::map(model_list,
-        ~ select_causals_single(train_data, .x, response, to_group, fm_param))
+        ~ select_causals_single(fmld_data, .x, "ld_cluster", fm_param))
     } else {
+      browser()
+      debugonce(select_causals_multi)
       causal_list <- purrr::map(model_list,
         ~ select_causals_multi(train_data, .x, response, to_group,
           fm_param, cond_res))
-        }
+    }
 
+    # we have causal candidates already, now we need to apply the rest of the
+    # EM-algorithm
 
   }
 
