@@ -112,6 +112,8 @@ rownames(out)[1]
 #' @importFrom stats terms
 has_intercept <- function(formula) {
 
+  stopifnot(class(formula) == "formula")
+
   attr(stats::terms(formula), "intercept") == 1
 
 }
@@ -128,8 +130,15 @@ has_intercept <- function(formula) {
 #'  which_snp = stringr::str_c("snp", 1:2)))
 #' extract_causal_vector(causal_list)
 #' @importFrom rlang set_names
-#' @importFrom purrr map map2
+#' @importFrom purrr map map2 map_lgl
+#' @importFrom tibble is_tibble
 extract_causal_vector <- function(causal_list) {
+
+  stopifnot(is.list(causal_list))
+  stopifnot(all(purrr::map_lgl(causal_list, tibble::is_tibble)))
+  all_names <- purrr::map(causal_list, names)
+  stopifnot(all(purrr::map_lgl(all_names, ~ "which_snp" %in% .)))
+  stopifnot(all(purrr::map_lgl(all_names, ~ "ld_cluster" %in% .)))
 
   candidates <- purrr::map(causal_list, "which_snp")
   ld_clusters <- purrr::map(causal_list, "ld_cluster")
