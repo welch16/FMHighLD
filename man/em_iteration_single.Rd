@@ -5,16 +5,26 @@
 \title{Performs an Expectation-Maximization iterations for the single
 trait model}
 \usage{
-em_iteration_single(formula, data, pi, model_list, sigma0, fm_param, verbose)
+em_iteration_single(
+  formula,
+  data,
+  causal_current,
+  prev_iter,
+  sigma0,
+  fm_param,
+  verbose
+)
 }
 \arguments{
 \item{formula}{a formula object with the underlying linear model}
 
 \item{data}{a `data.frame` object with the annotation matrix and z-values}
 
-\item{pi}{a vector of probabilities in the FMHighLD mixture part}
+\item{causal_current}{A list of `tibble::tibble` with columns `ld_cluster`
+and `which_snp` obtained in the current iteration of the algorithm}
 
-\item{model_list}{a list with the underlying linear models of FMHighLD}
+\item{prev_iter}{a `FMIter` object obtained in the previous iteration of the
+FMHighLD algorithm}
 
 \item{sigma0}{the error variance estimate of the background model}
 

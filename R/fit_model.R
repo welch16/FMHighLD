@@ -115,6 +115,7 @@ compute_mixture_prob <- function(prob_matrix) {
 #' @param verbose a logical indicator determining whether messages are going to
 #'  be used
 #' @return results
+#' @export
 fmhighld_fit <- function(response, annot_matrix, ld_clusters,
   singletrait = TRUE, ncausal_mixt = 1, skip_causal = FALSE,
   fm_param = FMParam(), save_iter = FALSE, verbose = FALSE) {
@@ -162,13 +163,17 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
   formula <- build_formula("response", colnames(annot_matrix), TRUE)
   init <- init_iteration(formula, fmld_data, singletrait, ncausal_mixt)
   model_list <- models(init)
-  causal_prob <- compute_mixture_prob(probmatrix(init))
+  # causal_prob <- compute_mixture_prob(probmatrix(init))
   background_error <- rlang::rep_along(model_list, 1)
 
   # prev_causals <- dplyr::mutate(init_candidates, prob = 0.5)
 
   continue <- TRUE
+  prev_iter <- init
+
   while (continue) {
+
+    browser()
     iter <- iter + 1
     # if (verbose) {
     #   message("starting iter ", iter)
@@ -183,6 +188,12 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
     if (singletrait) {
       causal_list <- purrr::map(model_list,
         ~ select_causals_single(fmld_data, .x, "ld_cluster", fm_param))
+      causal_wide <- causal_list %>%
+        purrr::map2(
+          stringr::str_c("which_snp", seq_len(ncausal_mixt), sep = "_"),
+            ~ rlang::set_names(.x, c("ld_cluster", .y))) %>%
+        purrr::reduce(purrr::partial(dplyr::inner_join, by = "ld_cluster"))
+
     } else {
       browser()
       debugonce(select_causals_multi)
@@ -191,11 +202,43 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
           fm_param, cond_res))
     }
 
+
+    if (singletrait) {
+      current_iter <- em_iteration_single(formula, fmld_data, causal_list,
+        prev_iter, background_error, fm_param, verbose)
+    } else {
+      current_iter <- em_iteration_multi(formula, fmld_data, causal_list,
+        prev_iter, background_error, fm_param, verbose)
+    }
+
+
+     
+        # mce = map2(causal_list,prev_causals,
+        #            inner_join,by = to_group) %>%
+        #     map(mutate, diff = which_snp != SNP) %>%
+        #     map(pull,diff) %>%
+        #     map_dbl(mean) %>%
+        #     max()
+       
+        # weight_list = iter_list %>% map( ~ .$gamma[,2]) 
+        
+        # entropy = prev_causals %>%
+        #     map(pull,prob) %>%
+        #     map2_dbl(weight_list, ~ kl(.y,.x))
+        # jsdist = prev_causals %>%
+        #     map(pull,prob) %>%
+        #     map2_dbl(weight_list,jsd)
+
+        # metrics = c("js_dist" = jsdist)
+
+        # continue = any(metrics >= tol) & iter < max_iter
+        # iter = iter + 1
     # we have causal candidates already, now we need to apply the rest of the
     # EM-algorithm
 
   }
 
+  # remember to add final causal candidates to object
 
 }
 

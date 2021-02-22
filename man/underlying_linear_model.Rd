@@ -4,12 +4,15 @@
 \alias{underlying_linear_model}
 \title{performs the underlying linear model in FMHighLD}
 \usage{
-underlying_linear_model(i, cov_mat, gamma, error_bound)
+underlying_linear_model(i, i_data, formula, gamma, error_bound)
 }
 \arguments{
 \item{i}{index of the model}
 
-\item{cov_mat}{covariate matrix}
+\item{i_data}{`fmld_data` for the causal candidates selected by the
+underlying i-th model}
+
+\item{formula}{a formula object with the underlying linear model}
 
 \item{gamma}{estep probabilities}
 

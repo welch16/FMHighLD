@@ -28,7 +28,7 @@ arma::mat estep(
   
   arma::vec sum_vector(N);
   arma::mat gamma_mat(N,K);
-  
+    
   for(int i = 0; i < N ; i++){
     for(int j = 0; j < K; j++){
       gamma_mat(i,j) = pi(j) * R::dnorm4(y(i),mu(i,j),sigma(i,j),0);

@@ -102,3 +102,37 @@ if (all(rowSums(out) > 0)) {
 rownames(out)[1]
 
 }
+
+#' Checks whether the formula contains the intercept
+#'
+#' @param formula a lm / lmm `formula` for the underlying linear models
+#' @return a logical value indicating whether the fixed effects have an
+#'  intercept term
+#' @export
+#' @importFrom stats terms
+has_intercept <- function(formula) {
+
+  attr(stats::terms(formula), "intercept") == 1
+
+}
+
+#' extract causal candidate vectors
+#'
+#' @param causal_list a list of `tibble::tibble` with columns ld_cluster and
+#'  which_snp
+#' @return a list of the same length as `causal_list` with two names character
+#'  vectors with the causal candidate snps
+#' @examples
+#' causal_list <- list(tibble::tibble(
+#'  ld_cluster = stringr::str_c("ld", 1:2),
+#'  which_snp = stringr::str_c("snp", 1:2)))
+#' extract_causal_vector(causal_list)
+#' @importFrom rlang set_names
+#' @importFrom purrr map map2
+extract_causal_vector <- function(causal_list) {
+
+  candidates <- purrr::map(causal_list, "which_snp")
+  ld_clusters <- purrr::map(causal_list, "ld_cluster")
+  purrr::map2(candidates, ld_clusters, rlang::set_names)
+
+}

@@ -1,3 +1,7 @@
+#' @useDynLib FMHighLD
+#' @exportPattern ^[[:alpha:]]+
+NULL
+
 #' Performs an Expectation-Maximization iterations for the multi trait model
 #' @param formula a formula object with the underlying linear model
 #' @param data a `data.frame` object with the annotation matrix and z-values
@@ -103,8 +107,10 @@ parse_re_variance <- function(re_error, ntraits) {
 #' trait model
 #' @param formula a formula object with the underlying linear model
 #' @param data a `data.frame` object with the annotation matrix and z-values
-#' @param pi a vector of probabilities in the FMHighLD mixture part
-#' @param model_list a list with the underlying linear models of FMHighLD
+#' @param causal_current A list of `tibble::tibble` with columns `ld_cluster`
+#'  and `which_snp` obtained in the current iteration of the algorithm
+#' @param prev_iter a `FMIter` object obtained in the previous iteration of the
+#'  FMHighLD algorithm
 #' @param sigma0 the error variance estimate of the background model
 #' @param fm_param configuration parameter used to pick the causal candidate
 #'  per group
@@ -115,78 +121,83 @@ parse_re_variance <- function(re_error, ntraits) {
 #' @importFrom stats predict update model.matrix
 #' @importFrom broom glance
 em_iteration_single <- function(
-  formula, data, pi, model_list, sigma0, fm_param, verbose) {
+  formula, data, causal_current, prev_iter, sigma0, fm_param, verbose) {
 
   if (verbose) message("--starting EM iter")
 
   error_bound <- error_bound(fm_param)
-  # include_intercept <- attr(stats::terms(formula), "intercept")
 
   # build a mean matrix to build E-step probabilities
   response <- get_response_name(formula)
 
   # convert to probabilities if they are not
-  pi <- pi / sum(pi)
+  pi <- compute_mixture_prob(probmatrix(prev_iter))
+  model_list <- models(prev_iter)
 
   # generate mean matrix
-
   if (verbose) message("--calculating means")
-  mu <- purrr::map(model_list, stats::predict, newdata = data)
+  new_data <- purrr::map(causal_current, dplyr::select, which_snp)
+  new_data <- purrr::map(new_data, dplyr::left_join, data,
+    by = c(which_snp = "snp"))
+  mu <- purrr::map2(model_list, new_data, stats::predict)
   names(mu) <- NULL
   mu <- do.call(cbind, mu)
-  # add background mean
-  mu <-  cbind(0, mu)
+  mu <-  cbind(0, mu) # add background mean
 
   # generate variance matrix
   if (verbose) message("--calculating variances")
   sigma <- purrr::map(model_list, broom::glance)
-  sigma <- purrr::map_dbl("sigma")
-
-  # need to convert into a matrix for use with Rcpp estep function
-  sigma <- purrr::map(sigma, rep, nrow(data))
-  sigma <- cbind(sigma0, sigma)
+  sigma <- purrr::map_dbl(sigma, "sigma")
+  sigma <- purrr::map(sigma, rep, nrow(mu))
+  sigma <- do.call(cbind, sigma)
+  sigma <- cbind(sigma0, sigma) ## add background error
 
   if (verbose) message("--calculating weights")
-
-  gamma_mat <- estep(
-    purrr::pluck(data, response), as.vector(pi), as.matrix(mu), sigma)
+  gamma_mat <- estep(purrr::pluck(data, response), as.vector(pi),
+    mu, sigma)
   gamma_mat <- pmax(gamma_mat, 1e-12)
   idxs <- seq_len(ncol(gamma_mat))
 
-  x_matrices <- purrr::map(model_list,
-    ~ stats::update(., data = mutate(data, w = 1)))
-  x_matrices <- purrr::map(x_matrices, stats::model.matrix)
-  # p <- unique(purrr::map_int(X_matrices, ncol))
-
   if (verbose) message("--fitting new models")
-  models <- purrr::map2(idxs[-1], x_matrices, underlying_linear_model,
-    gamma_mat, error_bound)
+  models <- purrr::map2(idxs[-1], new_data, underlying_linear_model,
+    formula, gamma_mat, error_bound)
 
-  x_matrices <- NULL
   FMIter(nassoc = nrow(data), singletrait = TRUE, models = models,
-    gamma = gamma_mat, mu = mu, sigma = sigma)
+    causal_candidates = extract_causal_vector(causal_current),
+    gamma = Matrix::Matrix(gamma_mat), mu = Matrix::Matrix(mu),
+    sigma = Matrix::Matrix(sigma))
 }
 
 #' performs the underlying linear model in FMHighLD
 #' @param i index of the model
-#' @param cov_mat covariate matrix
+#' @param i_data `fmld_data` for the causal candidates selected by the
+#'  underlying i-th model
+#' @param formula a formula object with the underlying linear model
 #' @param gamma estep probabilities
 #' @param error_bound numerical constant to avoid zero eigenvalues
 #' @return an `lm` model
 #' @importFrom dplyr mutate
 #' @importFrom stats lm
-underlying_linear_model <- function(i, cov_mat, gamma, error_bound) {
+underlying_linear_model <- function(i, i_data, formula, gamma, error_bound) {
 
   w <- NULL
   weights <- gamma[, i]
-  eigvals <- eigen(crossprod(cov_mat, diag(weights)) %*% cov_mat)
+  diag_w <- Matrix::Matrix(diag(weights))
+  response_name <- get_response_name(formula)
+  response_name <- rlang::sym(response_name)
+  cov_mat <- dplyr::select(i_data, -which_snp, -ld_cluster, -!!response_name)
+  cov_mat <- as(cov_mat, "Matrix")
+  if (has_intercept(as.formula(formula))) {
+    cov_mat <- cbind(1, cov_mat)
+  }
+  eigvals <- eigen(crossprod(cov_mat, diag_w) %*% cov_mat)
 
   if (any(eigvals$values <= 0)) {
     # fix very little eig values, which may cause numerical difficulties
     weights <- pmax(weights, error_bound)
   }
 
-  stats::lm(formula, data = dplyr::mutate(data, w = weights),
+  stats::lm(formula, data = dplyr::mutate(i_data, w = weights),
     weights = w)
 }
 
@@ -203,7 +214,8 @@ underlying_linear_model <- function(i, cov_mat, gamma, error_bound) {
 underlying_lme_model <- function(i, cov_mat, gamma, error_bound) {
 
   weights <- gamma[, i]
-  eigvals <- eigen(Matrix::crossprod(cov_mat, diag(weights)) %*% cov_mat)
+  diag_w <- Matrix::Matrix(diag(weights))
+  eigvals <- eigen(Matrix::crossprod(cov_mat, diag_w) %*% cov_mat)
   if (any(eigvals$values <= 0)) {
     weights <- pmax(weights, error_bound)
   }

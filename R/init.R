@@ -46,7 +46,7 @@ init_iteration <- function(formula, data, singletrait, ncausal_mixt) {
   causal_candidates <- init_causal_candidates(data, singletrait, ncausal_mixt)
 
   n <- unique(purrr::map_int(causal_candidates, length))
-  gamma_mat <- do.call(rbind, lapply(seq_len(n), function(x)c(1, 1)))
+  gamma_mat <- matrix(rep(1, (ncausal_mixt + 1) * n), nrow = n)
   gamma_mat <- Matrix::Matrix(gamma_mat)
   rownames(gamma_mat) <- names(causal_candidates)
   p <- ncol(gamma_mat)
