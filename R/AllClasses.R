@@ -165,7 +165,7 @@ setValidity("FMIter",
 #'  any element in the mixture
 #' @param mu a matrix with the predicted values of every snp with each column
 #'  being an element in the mixture
-#' @param sigma a matrix with the variances of every normal distribution in the
+#' @param sigma a matrix with the variances of every normal distributions in the
 #'  mixture.
 #'
 #' @aliases FMIter FMIter-class
