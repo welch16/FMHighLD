@@ -10,6 +10,7 @@ fmhighld_fit(
   ld_clusters,
   singletrait = TRUE,
   ncausal_mixt = 1,
+  formula = NULL,
   skip_causal = FALSE,
   fm_param = FMParam(),
   save_iter = FALSE,
@@ -32,6 +33,9 @@ variant belongs}
 multi_trait or single-trait fine-mapping}
 
 \item{ncausal_mixt}{the number of mixtures used in the causal models}
+
+\item{formula}{a `formula` for the underlying linear models, by default is
+`NULL`, in which case `fmhighld_fit` will create the formula.}
 
 \item{skip_causal}{a logical indicator determining whether the function will
 skip the causal selection steps, and only iterate through the EM algorithm}

@@ -151,6 +151,7 @@ em_iteration_single <- function(
   sigma <- purrr::map(sigma, rep, nrow(mu))
   sigma <- do.call(cbind, sigma)
   sigma <- cbind(sigma0, sigma) ## add background error
+  colnames(sigma) <- NULL
 
   if (verbose) message("--calculating weights")
   gamma_mat <- estep(purrr::pluck(data, response), as.vector(pi),
@@ -190,7 +191,9 @@ underlying_linear_model <- function(i, i_data, formula, gamma, error_bound) {
   if (has_intercept(as.formula(formula))) {
     cov_mat <- cbind(1, cov_mat)
   }
+
   eigvals <- eigen(crossprod(cov_mat, diag_w) %*% cov_mat)
+
 
   if (any(eigvals$values <= 0)) {
     # fix very little eig values, which may cause numerical difficulties

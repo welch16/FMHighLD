@@ -4,20 +4,34 @@
 \name{models}
 \alias{models}
 \alias{probmatrix}
+\alias{sigma0}
+\alias{causal_candidates}
 \alias{models,FMIter-method}
 \alias{probmatrix,FMIter-method}
+\alias{sigma0,FMIter-method}
+\alias{causal_candidates,FMIter-method}
 \title{models method}
 \usage{
 models(object)
 
 probmatrix(object)
 
+sigma0(object, response)
+
+causal_candidates(object)
+
 \S4method{models}{FMIter}(object)
 
 \S4method{probmatrix}{FMIter}(object)
+
+\S4method{sigma0}{FMIter}(object, response)
+
+\S4method{causal_candidates}{FMIter}(object)
 }
 \arguments{
 \item{object}{a `FMIter` object}
+
+\item{response}{the vector of all the z-values in the FMHighLD model}
 }
 \value{
 a list of linear models for single trait or linear mixed models for
@@ -25,10 +39,18 @@ a list of linear models for single trait or linear mixed models for
 
 a `Matrix::Matrix` object with the posterior probabilities computed
 in the latest EM iteration
+
+the std. deviation of the non-causal mixture
+
+a list of causal candidates for every mixture componet
 }
 \description{
 `models` return the list of models estimated in the `FMHighLD` iteration
 
 `probmatrix` returns the posterior probability matrix computed in the EM
 algorithm latest iteration
+
+`sigma0` obtains the std. deviations of the non-causal components
+
+Gets lists of causal candidates for every mixture
 }

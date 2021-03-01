@@ -35,7 +35,7 @@ any element in the mixture}
 \item{mu}{a matrix with the predicted values of every snp with each column
 being an element in the mixture}
 
-\item{sigma}{a matrix with the variances of every normal distribution in the
+\item{sigma}{a matrix with the variances of every normal distributions in the
 mixture.}
 }
 \description{

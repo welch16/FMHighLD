@@ -107,6 +107,8 @@ compute_mixture_prob <- function(prob_matrix) {
 #' @param singletrait  a logical indicator determining if the model is for
 #'  multi_trait or single-trait fine-mapping
 #' @param ncausal_mixt the number of mixtures used in the causal models
+#' @param formula a `formula` for the underlying linear models, by default is
+#'  `NULL`, in which case `fmhighld_fit` will create the formula.
 #' @param skip_causal a logical indicator determining whether the function will
 #'  skip the causal selection steps, and only iterate through the EM algorithm
 #' @param fm_param a `FMParam` object with the parameters used to run `FMHighLD`
@@ -117,7 +119,7 @@ compute_mixture_prob <- function(prob_matrix) {
 #' @return results
 #' @export
 fmhighld_fit <- function(response, annot_matrix, ld_clusters,
-  singletrait = TRUE, ncausal_mixt = 1, skip_causal = FALSE,
+  singletrait = TRUE, ncausal_mixt = 1, formula = NULL, skip_causal = FALSE,
   fm_param = FMParam(), save_iter = FALSE, verbose = FALSE) {
 
   stopifnot(is.matrix(annot_matrix) | is.vector(annot_matrix))
@@ -160,24 +162,27 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
   #   states <- NULL
   # }
 
-  formula <- build_formula("response", colnames(annot_matrix), TRUE)
+  if (is.null(formula)) {
+    formula <- build_formula("response", colnames(annot_matrix), TRUE)
+    warning("using formula ", as.character(formula))
+  }
   init <- init_iteration(formula, fmld_data, singletrait, ncausal_mixt)
-  model_list <- models(init)
   # causal_prob <- compute_mixture_prob(probmatrix(init))
-  background_error <- rlang::rep_along(model_list, 1)
-
-  # prev_causals <- dplyr::mutate(init_candidates, prob = 0.5)
 
   continue <- TRUE
-  prev_iter <- init
+  current_iter <- init
 
   while (continue) {
 
-    browser()
+    # browser()
     iter <- iter + 1
-    # if (verbose) {
-    #   message("starting iter ", iter)
-    # }
+    # if (iter > 10) browser()
+    prev_iter <- current_iter
+    model_list <- models(prev_iter)
+    sigma0 <- sigma0(prev_iter, fmld_data[[get_response_name(formula)]])
+    if (verbose) {
+      message("starting iter ", iter)
+    }
 
 # em_iteration_single <- function(
 #   formula, data, pi, model_list, sigma0, fm_param, verbose) {
@@ -188,11 +193,11 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
     if (singletrait) {
       causal_list <- purrr::map(model_list,
         ~ select_causals_single(fmld_data, .x, "ld_cluster", fm_param))
-      causal_wide <- causal_list %>%
-        purrr::map2(
-          stringr::str_c("which_snp", seq_len(ncausal_mixt), sep = "_"),
-            ~ rlang::set_names(.x, c("ld_cluster", .y))) %>%
-        purrr::reduce(purrr::partial(dplyr::inner_join, by = "ld_cluster"))
+      # causal_wide <- causal_list %>%
+      #   purrr::map2(
+      #     stringr::str_c("which_snp", seq_len(ncausal_mixt), sep = "_"),
+      #       ~ rlang::set_names(.x, c("ld_cluster", .y))) %>%
+      #   purrr::reduce(purrr::partial(dplyr::inner_join, by = "ld_cluster"))
 
     } else {
       browser()
@@ -205,14 +210,15 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
 
     if (singletrait) {
       current_iter <- em_iteration_single(formula, fmld_data, causal_list,
-        prev_iter, background_error, fm_param, verbose)
+        prev_iter, sigma0, fm_param, verbose)
     } else {
       current_iter <- em_iteration_multi(formula, fmld_data, causal_list,
-        prev_iter, background_error, fm_param, verbose)
+        prev_iter, sigma0, fm_param, verbose)
     }
 
+    print(coef(models(current_iter)[[1]]))
+    continue <- iter < max_iter
 
-     
         # mce = map2(causal_list,prev_causals,
         #            inner_join,by = to_group) %>%
         #     map(mutate, diff = which_snp != SNP) %>%
@@ -239,7 +245,7 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
   }
 
   # remember to add final causal candidates to object
-
+  current_iter
 }
 
 

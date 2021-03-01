@@ -109,3 +109,26 @@ setGeneric("models",
 #' @rdname FMIter-methods
 setGeneric("probmatrix",
   function(object) standardGeneric("probmatrix"))
+  
+#' sigma0 method
+#'
+#' `sigma0` obtains the std. deviations of the non-causal components
+#' @param object a `FMIter` object
+#' @param response the vector of all the z-values in the FMHighLD model
+#' @return the std. deviation of the non-causal mixture
+#' @docType methods
+#' @rdname FMIter-methods
+#' @export
+setGeneric("sigma0",
+  function(object, response) standardGeneric("sigma0"))
+
+#' causal_candidates method
+#'
+#' Gets lists of causal candidates for every mixture
+#' @param object a `FMIter` object
+#' @return a list of causal candidates for every mixture componet
+#' @docType methods
+#' @rdname FMIter-methods
+#' @export
+setGeneric("causal_candidates",
+  function(object) standardGeneric("causal_candidates"))
