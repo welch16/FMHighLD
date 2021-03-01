@@ -3,7 +3,7 @@
 #' @param i a numeric index, usually i = 2 only that correspond to the causal
 #'  variants, but the model is performed for a list in case more models are
 #'  being fitted for the locus
-#' @param causal_candidates a vector of the causal candidates selected for each 
+#' @param causal_candidates a vector of the causal candidates selected for each
 #'  ld cluster
 #' @param formula formula used for fitting the underlying linear model used by
 #'  FM-HighLD
