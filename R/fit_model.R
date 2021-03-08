@@ -142,6 +142,7 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
   }
 
   snp_names <- get_snp_names(response, singletrait)
+  annot_names <- colnames(annot_matrix)
 
   stopifnot(
     length(snp_names) == nrow(annot_matrix),
@@ -155,6 +156,7 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
   error_bound <- error_bound(fm_param)
   max_iter <- max_iter(fm_param)
   min_tol <- min_tol(fm_param)
+  annot_tol <- annot_tol(fm_param)
 
   # if (save_iter) {
   #   states <- list()
@@ -166,6 +168,7 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
     formula <- build_formula("response", colnames(annot_matrix), TRUE)
     warning("using formula ", as.character(formula))
   }
+
   init <- init_iteration(formula, fmld_data, singletrait, ncausal_mixt)
   # causal_prob <- compute_mixture_prob(probmatrix(init))
 
@@ -173,8 +176,6 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
   current_iter <- init
 
   while (continue) {
-
-    # browser()
     iter <- iter + 1
     # if (iter > 10) browser()
     prev_iter <- current_iter
@@ -192,12 +193,14 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
 
     if (singletrait) {
       causal_list <- purrr::map(model_list,
-        ~ select_causals_single(fmld_data, .x, "ld_cluster", fm_param))
-      # causal_wide <- causal_list %>%
-      #   purrr::map2(
-      #     stringr::str_c("which_snp", seq_len(ncausal_mixt), sep = "_"),
-      #       ~ rlang::set_names(.x, c("ld_cluster", .y))) %>%
-      #   purrr::reduce(purrr::partial(dplyr::inner_join, by = "ld_cluster"))
+        ~ select_causals_single(fmld_data, .x, fm_param, "ld_cluster",
+          annot_names))
+      causal_wide <- causal_list %>%
+        purrr::map2(
+          stringr::str_c("which_snp", seq_len(ncausal_mixt), sep = "_"),
+            ~ rlang::set_names(.x, c("ld_cluster", .y))) %>%
+        purrr::reduce(purrr::partial(dplyr::inner_join, by = "ld_cluster"))
+      print(dplyr::pull(causal_wide, which_snp_1))
 
     } else {
       browser()
@@ -216,7 +219,8 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
         prev_iter, sigma0, fm_param, verbose)
     }
 
-    print(coef(models(current_iter)[[1]]))
+    # browser()
+    print(purrr::map_dbl(models(current_iter), coef))
     continue <- iter < max_iter
 
         # mce = map2(causal_list,prev_causals,

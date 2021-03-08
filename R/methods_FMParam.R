@@ -46,3 +46,10 @@ setMethod("max_iter",
 setMethod("min_tol",
   signature = signature(object = "FMParam"),
   definition = function(object) object@min_tol)
+
+#' @rdname FMParam-methods
+#' @aliases annot_tol
+#' @docType methods
+setMethod("annot_tol",
+  signature = signature(object = "FMParam"),
+  definition = function(object) object@annot_tol)

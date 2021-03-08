@@ -8,12 +8,14 @@
 \alias{error_bound}
 \alias{max_iter}
 \alias{min_tol}
+\alias{annot_tol}
 \alias{strategy,FMParam-method}
 \alias{params_all,FMParam-method}
 \alias{params_pickm,FMParam-method}
 \alias{error_bound,FMParam-method}
 \alias{max_iter,FMParam-method}
 \alias{min_tol,FMParam-method}
+\alias{annot_tol,FMParam-method}
 \title{strategy method}
 \usage{
 strategy(object)
@@ -28,6 +30,8 @@ max_iter(object)
 
 min_tol(object)
 
+annot_tol(object)
+
 \S4method{strategy}{FMParam}(object)
 
 \S4method{params_all}{FMParam}(object)
@@ -39,6 +43,8 @@ min_tol(object)
 \S4method{max_iter}{FMParam}(object)
 
 \S4method{min_tol}{FMParam}(object)
+
+\S4method{annot_tol}{FMParam}(object)
 }
 \arguments{
 \item{object}{a `FMParam` object}
@@ -56,7 +62,7 @@ the error bound
 
 the max. number of iterations
 
-the max. number of iterations
+the min. change tolerance used by the FMHighLD algorithm
 }
 \description{
 `strategy` returns the randomization strategy
@@ -78,6 +84,9 @@ algorithm
 
 `min_tol` returns the minimum tolerance used by the FMHighLD
 algorithm
+
+`annot_tol` returns the minimum tolerance to accept variants with annotation
+equal to zero
 }
 \examples{
 strategy(FMParam())
@@ -86,4 +95,8 @@ params_pickm(FMParam(strategy = "pick_m", prob = .9, k = 2))
 error_bound(FMParam())
 max_iter(FMParam())
 min_tol(FMParam())
+annot_tol(FMParam())
+}
+\references{
+the min. tolerance used to accept an annotation equal to zero
 }

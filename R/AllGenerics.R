@@ -78,7 +78,7 @@ setGeneric("max_iter",
 #' `min_tol` returns the minimum tolerance used by the FMHighLD
 #' algorithm
 #' @param object a `FMParam` object
-#' @return the max. number of iterations
+#' @return the min. change tolerance used by the FMHighLD algorithm
 #' @docType methods
 #' @rdname FMParam-methods
 #' @export
@@ -86,6 +86,20 @@ setGeneric("max_iter",
 #' min_tol(FMParam())
 setGeneric("min_tol",
   function(object) standardGeneric("min_tol"))
+
+#' annot_tol method
+#'
+#' `annot_tol` returns the minimum tolerance to accept variants with annotation
+#' equal to zero
+#' @param object a `FMParam` object
+#' @references the min. tolerance used to accept an annotation equal to zero
+#' @docType methods
+#' @rdname FMParam-methods
+#' @export
+#' @examples
+#' annot_tol(FMParam())
+setGeneric("annot_tol",
+  function(object) standardGeneric("annot_tol"))
 
 #' models method
 #'

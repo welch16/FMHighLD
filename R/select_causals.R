@@ -41,12 +41,14 @@ build_design_matrix <- function(data, beta) {
 #' Selects the causal variants in the locus for a single-trait model
 #' @param data a `data.frame` used to fit the FM-HighLD model
 #' @param model a fitted model with the previously selected causal candidates
-#' @param group name of the grouping variable used to pick the causal
-#'  candidates
 #' @param fm_param configuration parameter used to pick the causal candidate
 #'  per group
+#' @param group name of the grouping variable used to pick the causal
+#'  candidates
+#' @param annot_names names of the annotation variables to ignore the variants
+#'  with `norm2(annot)` close to zero
 #' @importFrom stats formula terms coef model.matrix
-select_causals_single <- function(data, model, group, fm_param) {
+select_causals_single <- function(data, model, fm_param, group, annot_names) {
 
   model_formula <- stats::formula(model)
   response <- as.character(model_formula)[2]
@@ -55,7 +57,7 @@ select_causals_single <- function(data, model, group, fm_param) {
   fitted <- as.numeric(design_matrix %*% beta)
   residuals <- data[[response]] - fitted
 
-  causal_rule(data, residuals, fm_param, group)
+  causal_rule(data, residuals, fm_param, group, annot_names)
 }
 
 #' Selects the causal variants in the locus for a multi-trait model
@@ -92,20 +94,29 @@ select_causals_multi <- function(data, model, group,
 #' Applies the causal selection rule to the residual vector
 #' @param data a `data.frame` used to fit the FM-HighLD model
 #' @param residuals a vector of residuals for all the SNPs
-#' @param to_group names of the grouping variable used to pick the causal
-#'  candidates
 #' @param fm_param configuration parameter used to pick the causal candidate
 #'  per group
+#' @param group names of the grouping variable used to pick the causal
+#'  candidates
+#' @param annot_names names of the annotation variables to ignore the variants
+#'  with `norm2(annot)` close to zero
 #' @importFrom dplyr select group_by mutate summarize ungroup bind_rows
 #' @importFrom dplyr top_n sample_n filter inner_join anti_join
 #' @importFrom tidyselect one_of
 #' @importFrom nnet which.is.max
-#' @importFrom rlang syms
-causal_rule <- function(data, residuals, fm_param, to_group) {
+#' @importFrom rlang syms `!!!`
+causal_rule <- function(data, residuals, fm_param, group, annot_names) {
 
-  new_data <- dplyr::select(data, snp, tidyselect::one_of(to_group))
+  annot_sym <- rlang::syms(annot_names)
+  new_data <- dplyr::rowwise(data)
+  new_data <- dplyr::mutate(new_data,
+    aux_norm = norm2_wrap(!!! annot_sym))
+  new_data <- dplyr::ungroup(new_data)
+  new_data <- dplyr::select(new_data, snp, tidyselect::one_of(group),
+    aux_norm)
   new_data <- dplyr::mutate(new_data, res_seq = residuals ^ 2)
-  new_data <- dplyr::group_by(new_data, !!! rlang::syms(to_group))
+  new_data <- dplyr::filter(new_data, aux_norm >= annot_tol(fm_param))
+  new_data <- dplyr::group_by(new_data, !!! rlang::syms(group))
 
   if (strategy(fm_param) == "none") {
     out <- dplyr::summarize(new_data,
@@ -139,8 +150,8 @@ causal_rule <- function(data, residuals, fm_param, to_group) {
 
     }
 
-    pick_data <- dplyr::inner_join(picks, new_data, by = to_group)
-    pick_data <- dplyr::group_by(pick_data, !!! rlang::syms(to_group))
+    pick_data <- dplyr::inner_join(picks, new_data, by = group)
+    pick_data <- dplyr::group_by(pick_data, !!! rlang::syms(group))
     pick_data <- dplyr::summarize(pick_data,
       which_snp =
         snp[select_kth_random(res_seq, params_pickm(fm_param)$prob,
@@ -149,12 +160,12 @@ causal_rule <- function(data, residuals, fm_param, to_group) {
 
     out <- dplyr::ungroup(out)
     out <- dplyr::select(out, -n)
-    out <- dplyr::anti_join(out, picks, by = to_group)
+    out <- dplyr::anti_join(out, picks, by = group)
     out <- dplyr::bind_rows(out, pick_data)
 
   }
 
-  n <- which_snp <- snp <- res_seq <- NULL
+  n <- which_snp <- snp <- res_seq <- aux_norm <- NULL
 
   out
 }

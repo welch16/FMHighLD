@@ -13,7 +13,8 @@ setClass("FMParam",
     m_sel = "character",
     error_bound = "numeric",
     max_iter = "numeric",
-    min_tol = "numeric"),
+    min_tol = "numeric",
+    annot_tol = "numeric"),
   prototype = prototype(
     strategy = NA_character_,
     prob = NA_real_,
@@ -22,7 +23,8 @@ setClass("FMParam",
     m_sel = NA_character_,
     error_bound = 1e-4,
     max_iter = 100,
-    min_tol = 1e-6))
+    min_tol = 1e-6,
+    annot_tol = 1e-6))
     
 setValidity("FMParam",
   function(object) {
@@ -78,13 +80,15 @@ setValidity("FMParam",
 #' @param max_iter the max. number of iteration by the algorithm used to stop
 #'  the algorithm
 #' @param min_tol the min. tolerance used to stop the algorithm
+#' @param annot_tol the min. tolerance to accept prediction with small
+#'  annotation values
 #' @return A `FMParam` object with the `FMHighLD` algorithm configuration
 #' @export
 #' @importFrom methods new
 #' @importFrom stringr str_to_lower
 FMParam <- function(strategy = NULL, prob = NULL, k = NULL,
   m = NULL, m_sel = NULL, error_bound = 1e-4, max_iter = 100,
-  min_tol = 1e-6) {
+  min_tol = 1e-6, annot_tol = 1e-6) {
 
   if (is.null(strategy)) {
     out <- methods::new("FMParam", strategy = "none",
@@ -107,7 +111,7 @@ FMParam <- function(strategy = NULL, prob = NULL, k = NULL,
       m_sel <- stringr::str_to_lower(m_sel)
       out <- methods::new("FMParam", strategy = "pick_m", prob = prob,
         k = k, m = m, m_sel = m_sel, error_bound = error_bound,
-        max_iter = max_iter, min_tol = min_tol)
+        max_iter = max_iter, min_tol = min_tol, annot_tol = annot_tol)
     }
   }
   out

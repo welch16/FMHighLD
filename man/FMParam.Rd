@@ -14,7 +14,8 @@ FMParam(
   m_sel = NULL,
   error_bound = 1e-04,
   max_iter = 100,
-  min_tol = 1e-06
+  min_tol = 1e-06,
+  annot_tol = 1e-06
 )
 }
 \arguments{
@@ -49,6 +50,9 @@ zero denominators}
 the algorithm}
 
 \item{min_tol}{the min. tolerance used to stop the algorithm}
+
+\item{annot_tol}{the min. tolerance to accept prediction with small
+annotation values}
 }
 \value{
 A `FMParam` object with the `FMHighLD` algorithm configuration

@@ -34,6 +34,7 @@ arma::mat estep(
       gamma_mat(i,j) = pi(j) * R::dnorm4(y(i),mu(i,j),sigma(i,j),0);
     }
     sum_vector(i) = sum(gamma_mat.row(i));
+    // Rcout << "The value of ss : " << gamma_mat << "\n";
     for(int j = 0; j < K; j++ ){
       gamma_mat(i,j) = gamma_mat(i,j) / sum_vector(i);
     }

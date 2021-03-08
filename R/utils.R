@@ -145,3 +145,20 @@ extract_causal_vector <- function(causal_list) {
   purrr::map2(candidates, ld_clusters, rlang::set_names)
 
 }
+
+#' Wrap around the `norm` operator to work with `dplyr::rowwise`
+#'
+#' @param ... names of the variables to use when computing the norm2
+#' @return the norm2 of the columns picks
+#' @examples
+#' library(magrittr)
+#' tibble::tribble( ~ "vec1", ~ "vec2", 1, 1, 0, 1, 1, 0, 0, 0) %>%
+#'  dplyr::rowwise() %>%
+#'  dplyr::mutate( norm2_wrap(vec1, vec2))
+norm2_wrap <- function(...) {
+
+  vec <- list(...)
+  vec <- unlist(vec)
+  norm(matrix(vec), "F")
+
+}
