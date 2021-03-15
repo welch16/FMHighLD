@@ -101,7 +101,7 @@ select_causals_multi <- function(data, model, group,
 #' @param annot_names names of the annotation variables to ignore the variants
 #'  with `norm2(annot)` close to zero
 #' @importFrom dplyr select group_by mutate summarize ungroup bind_rows
-#' @importFrom dplyr top_n sample_n filter inner_join anti_join
+#' @importFrom dplyr top_n sample_n filter inner_join anti_join if_else
 #' @importFrom tidyselect one_of
 #' @importFrom nnet which.is.max
 #' @importFrom rlang syms `!!!`
@@ -115,7 +115,9 @@ causal_rule <- function(data, residuals, fm_param, group, annot_names) {
   new_data <- dplyr::select(new_data, snp, tidyselect::one_of(group),
     aux_norm)
   new_data <- dplyr::mutate(new_data, res_seq = residuals ^ 2)
-  new_data <- dplyr::filter(new_data, aux_norm >= annot_tol(fm_param))
+  new_data <- dplyr::mutate(new_data,
+    res_seq = dplyr::if_else(aux_norm >= annot_tol(fm_param),
+      Inf, res_seq))
   new_data <- dplyr::group_by(new_data, !!! rlang::syms(group))
 
   if (strategy(fm_param) == "none") {

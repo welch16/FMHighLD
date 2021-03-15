@@ -4,18 +4,21 @@
 \alias{select_causals_single}
 \title{Selects the causal variants in the locus for a single-trait model}
 \usage{
-select_causals_single(data, model, group, fm_param)
+select_causals_single(data, model, fm_param, group, annot_names)
 }
 \arguments{
 \item{data}{a `data.frame` used to fit the FM-HighLD model}
 
 \item{model}{a fitted model with the previously selected causal candidates}
 
+\item{fm_param}{configuration parameter used to pick the causal candidate
+per group}
+
 \item{group}{name of the grouping variable used to pick the causal
 candidates}
 
-\item{fm_param}{configuration parameter used to pick the causal candidate
-per group}
+\item{annot_names}{names of the annotation variables to ignore the variants
+with `norm2(annot)` close to zero}
 }
 \description{
 Selects the causal variants in the locus for a single-trait model

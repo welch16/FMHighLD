@@ -162,3 +162,17 @@ norm2_wrap <- function(...) {
   norm(matrix(vec), "F")
 
 }
+
+#' Gets the std. error from a linear model
+#'
+#' @param lm_model an `lm` object
+#' @return the std. error of `lm_model`
+lm_std_err <- function(lm_model) {
+  coef(summary(lm_model))[, "Std. Error"]
+}
+
+#' Computes the philips stopping criteria acrosss all distances
+#'
+#' @param x a vector of losses between current and previous iterations
+#' @return the philips stopping criteria
+philips <- function(x) sqrt(sum(x) / (1 + max(x)))

@@ -200,7 +200,7 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
           stringr::str_c("which_snp", seq_len(ncausal_mixt), sep = "_"),
             ~ rlang::set_names(.x, c("ld_cluster", .y))) %>%
         purrr::reduce(purrr::partial(dplyr::inner_join, by = "ld_cluster"))
-      print(dplyr::pull(causal_wide, which_snp_1))
+      # print(dplyr::pull(causal_wide, which_snp_1))
 
     } else {
       browser()
@@ -219,9 +219,17 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
         prev_iter, sigma0, fm_param, verbose)
     }
 
-    # browser()
+    ## compute metrics
+    entropy_vec <- prob_metric(current_iter, prev_iter)
+    mccl_vec <- mccl(current_iter, prev_iter)
+    coef_diff <- coeff_diff(current_iter, prev_iter)
+    pl <- philips(c(entropy_vec, mccl_vec, coef_diff))
+
     print(purrr::map_dbl(models(current_iter), coef))
-    continue <- iter < max_iter
+
+    print(str_c("pl: ", pl))
+
+    continue <- iter < max_iter & pl >= min_tol
 
         # mce = map2(causal_list,prev_causals,
         #            inner_join,by = to_group) %>%
@@ -249,6 +257,7 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
   }
 
   # remember to add final causal candidates to object
+  print(round(compute_mixture_prob(probmatrix(current_iter)), 2))
   current_iter
 }
 

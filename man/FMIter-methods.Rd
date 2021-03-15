@@ -6,10 +6,16 @@
 \alias{probmatrix}
 \alias{sigma0}
 \alias{causal_candidates}
+\alias{prob_metric}
+\alias{mccl}
+\alias{coeff_diff}
 \alias{models,FMIter-method}
 \alias{probmatrix,FMIter-method}
 \alias{sigma0,FMIter-method}
 \alias{causal_candidates,FMIter-method}
+\alias{prob_metric,FMIter,FMIter-method}
+\alias{mccl,FMIter,FMIter-method}
+\alias{coeff_diff,FMIter,FMIter-method}
 \title{models method}
 \usage{
 models(object)
@@ -20,6 +26,12 @@ sigma0(object, response)
 
 causal_candidates(object)
 
+prob_metric(object, prev)
+
+mccl(object, prev)
+
+coeff_diff(object, prev)
+
 \S4method{models}{FMIter}(object)
 
 \S4method{probmatrix}{FMIter}(object)
@@ -27,11 +39,19 @@ causal_candidates(object)
 \S4method{sigma0}{FMIter}(object, response)
 
 \S4method{causal_candidates}{FMIter}(object)
+
+\S4method{prob_metric}{FMIter,FMIter}(object, prev)
+
+\S4method{mccl}{FMIter,FMIter}(object, prev)
+
+\S4method{coeff_diff}{FMIter,FMIter}(object, prev)
 }
 \arguments{
-\item{object}{a `FMIter` object}
+\item{object}{The current `FMIter` object}
 
 \item{response}{the vector of all the z-values in the FMHighLD model}
+
+\item{prev}{The previous `FMIter` iteration of the object}
 }
 \value{
 a list of linear models for single trait or linear mixed models for
@@ -43,6 +63,13 @@ in the latest EM iteration
 the std. deviation of the non-causal mixture
 
 a list of causal candidates for every mixture componet
+
+a vector with the jsd metric for every mixture components
+
+the mean one-zero loss of causal candidates variants between the
+ current and previous iteration
+
+the distance between the fixed effect coefficients
 }
 \description{
 `models` return the list of models estimated in the `FMHighLD` iteration

@@ -146,3 +146,33 @@ setGeneric("sigma0",
 #' @export
 setGeneric("causal_candidates",
   function(object) standardGeneric("causal_candidates"))
+
+#' Compute the column-wise JSD metric between the gamma matrix of the current
+#' and previous FMIter objects
+#' @param object The current `FMIter` object
+#' @param prev The previous `FMIter` iteration of the object
+#' @return a vector with the jsd metric for every mixture components
+#' @docType methods
+#' @rdname FMIter-methods
+setGeneric("prob_metric",
+  function(object, prev) standardGeneric("prob_metric"))
+  
+#' Compute the mean one-zero loss between the causal candidates selected
+#' @param object The current `FMIter` object
+#' @param prev The previous `FMIter` iteration of the object
+#' @return the mean one-zero loss of causal candidates variants between the
+#'  current and previous iteration
+#' @docType methods
+#' @rdname FMIter-methods
+setGeneric("mccl",
+  function(object, prev) standardGeneric("mccl"))
+
+#' Compute the difference between the current and previous beta coefficients of
+#'  the underlying linear (mixed) models
+#' @param object The current `FMIter` object
+#' @param prev The previous `FMIter` iteration of the object
+#' @return the distance between the fixed effect coefficients
+#' @docType methods
+#' @rdname FMIter-methods
+setGeneric("coeff_diff",
+  function(object, prev) standardGeneric("coeff_diff"))

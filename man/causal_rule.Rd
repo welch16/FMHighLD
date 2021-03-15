@@ -4,7 +4,7 @@
 \alias{causal_rule}
 \title{Applies the causal selection rule to the residual vector}
 \usage{
-causal_rule(data, residuals, fm_param, to_group)
+causal_rule(data, residuals, fm_param, group, annot_names)
 }
 \arguments{
 \item{data}{a `data.frame` used to fit the FM-HighLD model}
@@ -14,8 +14,11 @@ causal_rule(data, residuals, fm_param, to_group)
 \item{fm_param}{configuration parameter used to pick the causal candidate
 per group}
 
-\item{to_group}{names of the grouping variable used to pick the causal
+\item{group}{names of the grouping variable used to pick the causal
 candidates}
+
+\item{annot_names}{names of the annotation variables to ignore the variants
+with `norm2(annot)` close to zero}
 }
 \description{
 Applies the causal selection rule to the residual vector
