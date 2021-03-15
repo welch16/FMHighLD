@@ -8,14 +8,14 @@
 \alias{causal_candidates}
 \alias{prob_metric}
 \alias{mccl}
-\alias{coeff_diff}
+\alias{coef_diff}
 \alias{models,FMIter-method}
 \alias{probmatrix,FMIter-method}
 \alias{sigma0,FMIter-method}
 \alias{causal_candidates,FMIter-method}
 \alias{prob_metric,FMIter,FMIter-method}
 \alias{mccl,FMIter,FMIter-method}
-\alias{coeff_diff,FMIter,FMIter-method}
+\alias{coef_diff,FMIter,FMIter,logical,logical-method}
 \title{models method}
 \usage{
 models(object)
@@ -30,7 +30,7 @@ prob_metric(object, prev)
 
 mccl(object, prev)
 
-coeff_diff(object, prev)
+coef_diff(object, prev, model_error, background_error)
 
 \S4method{models}{FMIter}(object)
 
@@ -44,7 +44,7 @@ coeff_diff(object, prev)
 
 \S4method{mccl}{FMIter,FMIter}(object, prev)
 
-\S4method{coeff_diff}{FMIter,FMIter}(object, prev)
+\S4method{coef_diff}{FMIter,FMIter,logical,logical}(object, prev, model_error, background_error)
 }
 \arguments{
 \item{object}{The current `FMIter` object}
@@ -52,6 +52,12 @@ coeff_diff(object, prev)
 \item{response}{the vector of all the z-values in the FMHighLD model}
 
 \item{prev}{The previous `FMIter` iteration of the object}
+
+\item{model_error}{a logical value indicating whehter including the model
+errors' difference to the output vector}
+
+\item{background_error}{a logical value indicating whether including the
+background errors' difference to the output vector}
 }
 \value{
 a list of linear models for single trait or linear mixed models for

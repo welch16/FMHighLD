@@ -4,11 +4,22 @@
 \alias{init_iteration}
 \title{Performs the initial iteration of the FM-HighLD model}
 \usage{
-init_iteration(formula, data, singletrait, ncausal_mixt)
+init_iteration(
+  formula,
+  init_coef_mean,
+  data,
+  singletrait,
+  ncausal_mixt,
+  fm_param
+)
 }
 \arguments{
 \item{formula}{formula used for fitting the underlying linear model used by
 FM-HighLD}
+
+\item{init_coef_mean}{a coefficients vector to init the algorithm with causal
+candidates selected from models with underlying coefficients sampled from a
+multivariate normal with mean `init_coef_mean`}
 
 \item{data}{`data.frame` used for the FM-HighLD model}
 
@@ -16,6 +27,8 @@ FM-HighLD}
 multi_trait or single-trait fine-mapping}
 
 \item{ncausal_mixt}{the number of mixtures used in the causal models}
+
+\item{fm_param}{a `FMParam` object with the parameters used to run `FMHighLD`}
 }
 \value{
 a list with the models, and probability matrix for the EM-algorithm

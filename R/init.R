@@ -33,17 +33,28 @@ compute_ith_model <- function(i, causal_candidates, formula, data, gamma,
 #' Performs the initial iteration of the FM-HighLD model
 #' @param formula formula used for fitting the underlying linear model used by
 #'  FM-HighLD
+#' @param init_coef_mean a coefficients vector to init the algorithm with causal
+#'  candidates selected from models with underlying coefficients sampled from a
+#'  multivariate normal with mean `init_coef_mean`
 #' @param data `data.frame` used for the FM-HighLD model
 #' @param singletrait  a logical indicator determining if the model is for
 #' multi_trait or single-trait fine-mapping
 #' @param ncausal_mixt the number of mixtures used in the causal models
+#' @param fm_param a `FMParam` object with the parameters used to run `FMHighLD`
 #' @return a list with the models, and probability matrix for the EM-algorithm
 #' @importFrom Matrix Matrix
 #' @importFrom stats predict
 #' @importFrom purrr map_int map2
-init_iteration <- function(formula, data, singletrait, ncausal_mixt) {
+init_iteration <- function(formula, init_coef_mean, data, singletrait,
+  ncausal_mixt, fm_param) {
 
-  causal_candidates <- init_causal_candidates(data, singletrait, ncausal_mixt)
+  if (is.null(init_coef_mean)) {
+    causal_candidates <- init_causal_candidates_random(data, singletrait,
+      ncausal_mixt)
+  } else {
+    causal_candidates <- init_causal_candidates_coef(data, singletrait,
+      formula, init_coef_mean, ncausal_mixt, fm_param)
+  }
 
   n <- unique(purrr::map_int(causal_candidates, length))
   gamma_mat <- matrix(rep(1, (ncausal_mixt + 1) * n), nrow = n)
@@ -62,8 +73,71 @@ init_iteration <- function(formula, data, singletrait, ncausal_mixt) {
 
 }
 
+#' Initializes the causal candidates before fitting the model by picking the
+#' snps based on a model with sampled random coefficients from a normal
+#' distribution centered around the `init_coef_mean`
+#' @param data `data.frame` used for the FM-HighLD model
+#' @param singletrait  a logical indicator determining if the model is for
+#'  multi_trait or single-trait fine-mapping
+#' @param formula the formula of the underlying linear model
+#' @param init_coef_mean the mean vector to sample the init. coefficients from
+#'  a normal distribution
+#' @param ncausal_mixt the number of mixtures used in the causal models
+#' @param fm_param a `FMParam` object with the parameters used to run `FMHighLD`
+#' @return a list of length `ncausal_mixt` with a vector of one causal candida-
+#'  te per ld group (if `singletrait = TRUE`) or per combination of ld_group
+#'  and trait if (`singletrait = FALSE`)
+#' @importFrom rlang syms set_names
+#' @importFrom dplyr group_by sample_n
+#' @importFrom purrr map map2
+#' @importFrom stringr str_c
+#' @export
+#' @examples
+#' nsnps <- 10
+#' z <- rlang::set_names(rnorm(nsnps), stringr::str_c("snp", seq_len(nsnps)))
+#' annot <- matrix(rnorm(nsnps), ncol = 1)
+#' rownames(annot) <- names(z)
+#' colnames(annot) <- "annot"
+#' ld_cluster <- sample(stringr::str_c("ld", seq_len(5)), nsnps, replace = TRUE)
+#' names(ld_cluster) <- names(z)
+#' data <- build_fm_tibble(z, annot, ld_cluster, TRUE)
+#' init_causal_candidates_coef(data, TRUE, response ~ 0 + annot, .5, 1,
+#'  FMParam())
+#' init_causal_candidates_coef(data, TRUE, response ~ 0 + annot, .5, 2,
+#'  FMParam())
+init_causal_candidates_coef <- function(data, singletrait, formula,
+  init_coef_mean, ncausal_mixt, fm_param) {
 
-#' Initializes the causal candidates before fitting the model
+  if (singletrait) {
+    init_model <- stats::lm(formula, data = data)
+  } else {
+    init_model <- lme4::lmer(formula, data = data)
+  }
+
+  init_coef <- stats::coef(init_model)
+  if (length(init_coef) != length(init_coef_mean)) {
+    stop(stringr::str_c("The dimension of `init_coef_mean` is not the",
+      "same than the parameters suggested by the formula", sep = " "))
+  }
+  init_models <- replicate(ncausal_mixt, {
+    init_model$coefficients <- rnorm(1, mean = init_coef_mean, sd = 1e-2)
+    names(init_model$coefficients) <- names(init_coef)
+    init_model
+  }, simplify = FALSE)
+
+  causal_candidate_list <- purrr::map(init_models,
+    ~ select_causals_single(data, ., fm_param,
+      "ld_cluster", names(init_coef)))
+  causal_candidate_snps <- purrr::map(causal_candidate_list, "which_snp")
+  causal_candidate_ld <- purrr::map(causal_candidate_list, "ld_cluster")
+  causal_candidate_snps <- purrr::map2(
+    causal_candidate_snps, causal_candidate_ld, rlang::set_names)
+  causal_candidate_snps
+}
+
+
+#' Initializes the causal candidates before fitting the model by sampling a
+#' random variant from each LD cluster
 #' @param data `data.frame` used for the FM-HighLD model
 #' @param singletrait  a logical indicator determining if the model is for
 #'  multi_trait or single-trait fine-mapping
@@ -85,15 +159,15 @@ init_iteration <- function(formula, data, singletrait, ncausal_mixt) {
 #' ld_cluster <- sample(stringr::str_c("ld", seq_len(5)), nsnps, replace = TRUE)
 #' names(ld_cluster) <- names(z)
 #' data <- build_fm_tibble(z, annot, ld_cluster, TRUE)
-#' init_causal_candidates(data, TRUE, 1)
-#' init_causal_candidates(data, TRUE, 2)
+#' init_causal_candidates_random(data, TRUE, 1)
+#' init_causal_candidates_random(data, TRUE, 2)
 #' z_list <- list()
 #' z_list[["a"]] <- z[1:3]
 #' z_list[["b"]] <- z[3:5]
 #' z_list[["c"]] <- z[6:10]
 #' data = build_fm_tibble(z_list, annot, ld_cluster, FALSE)
-#' init_causal_candidates(data, FALSE, 3)
-init_causal_candidates <- function(data, singletrait, ncausal_mixt) {
+#' init_causal_candidates_random(data, FALSE, 3)
+init_causal_candidates_random <- function(data, singletrait, ncausal_mixt) {
 
   if (singletrait) {
     data <- dplyr::mutate(data, sample_var = ld_cluster)

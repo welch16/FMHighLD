@@ -171,8 +171,13 @@ setGeneric("mccl",
 #'  the underlying linear (mixed) models
 #' @param object The current `FMIter` object
 #' @param prev The previous `FMIter` iteration of the object
+#' @param model_error a logical value indicating whehter including the model
+#'  errors' difference to the output vector
+#' @param background_error a logical value indicating whether including the
+#'  background errors' difference to the output vector
 #' @return the distance between the fixed effect coefficients
 #' @docType methods
 #' @rdname FMIter-methods
-setGeneric("coeff_diff",
-  function(object, prev) standardGeneric("coeff_diff"))
+setGeneric("coef_diff",
+  function(object, prev, model_error, background_error)
+    standardGeneric("coef_diff"))

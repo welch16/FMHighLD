@@ -109,6 +109,9 @@ compute_mixture_prob <- function(prob_matrix) {
 #' @param ncausal_mixt the number of mixtures used in the causal models
 #' @param formula a `formula` for the underlying linear models, by default is
 #'  `NULL`, in which case `fmhighld_fit` will create the formula.
+#' @param init_coef_mean a coefficients vector to init the algorithm with causal
+#'  candidates selected from models with underlying coefficients sampled from a
+#'  multivariate normal with mean `init_coef_mean`
 #' @param skip_causal a logical indicator determining whether the function will
 #'  skip the causal selection steps, and only iterate through the EM algorithm
 #' @param fm_param a `FMParam` object with the parameters used to run `FMHighLD`
@@ -119,8 +122,9 @@ compute_mixture_prob <- function(prob_matrix) {
 #' @return results
 #' @export
 fmhighld_fit <- function(response, annot_matrix, ld_clusters,
-  singletrait = TRUE, ncausal_mixt = 1, formula = NULL, skip_causal = FALSE,
-  fm_param = FMParam(), save_iter = FALSE, verbose = FALSE) {
+  singletrait = TRUE, ncausal_mixt = 1, formula = NULL, init_coef_mean = NULL,
+  skip_causal = FALSE, fm_param = FMParam(), save_iter = FALSE,
+  verbose = FALSE) {
 
   stopifnot(is.matrix(annot_matrix) | is.vector(annot_matrix))
   if (is.vector(annot_matrix)) {
@@ -169,7 +173,8 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
     warning("using formula ", as.character(formula))
   }
 
-  init <- init_iteration(formula, fmld_data, singletrait, ncausal_mixt)
+  init <- init_iteration(formula, init_coef_mean, fmld_data,
+    singletrait, ncausal_mixt, fm_param)
   # causal_prob <- compute_mixture_prob(probmatrix(init))
 
   continue <- TRUE
@@ -222,12 +227,12 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
     ## compute metrics
     entropy_vec <- prob_metric(current_iter, prev_iter)
     mccl_vec <- mccl(current_iter, prev_iter)
-    coef_diff <- coeff_diff(current_iter, prev_iter)
-    pl <- philips(c(entropy_vec, mccl_vec, coef_diff))
+    coef_diff <- coef_diff(current_iter, prev_iter, FALSE, FALSE)
+    pl <- philips(c(entropy_vec[2], mccl_vec, coef_diff))
 
+    print(iter)
     print(purrr::map_dbl(models(current_iter), coef))
-
-    print(str_c("pl: ", pl))
+    print(stringr::str_c("pl: ", pl))
 
     continue <- iter < max_iter & pl >= min_tol
 

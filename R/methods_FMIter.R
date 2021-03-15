@@ -68,11 +68,12 @@ setMethod("mccl",
 })
 
 #' @rdname FMIter-methods
-#' @aliases coeff_diff
+#' @aliases coef_diff
 #' @docType methods
-setMethod("coeff_diff",
-  signature = signature(object = "FMIter", prev = "FMIter"),
-  definition = function(object, prev) {
+setMethod("coef_diff",
+  signature = signature(object = "FMIter", prev = "FMIter",
+    model_error = "logical", background_error = "logical"),
+  definition = function(object, prev, model_error, background_error) {
 
     if (object@singletrait) {
       current_coefs <- purrr::map(models(object), coef)
@@ -89,12 +90,16 @@ setMethod("coeff_diff",
       }
 
       out1 <- purrr::map2_dbl(current_coefs, prev_coefs, ~ (.x - .y)^2)
-      out2 <- purrr::map2_dbl(current_errs, prev_errs, ~ (.x - .y)^2)
-      out3 <- purrr::map2_dbl(current_background_errs, prev_background_errs,
-        ~ (.x - .y)^2)
-      out <- c(out1, out2, out3)
-      # out <- sqrt(sum(out) / (1 + max(out)))
-
+      out <- out1
+      if (model_error) {
+        out2 <- purrr::map2_dbl(current_errs, prev_errs, ~ (.x - .y)^2)
+        out <- c(out, out2)
+      }
+      if (background_error) {
+        out3 <- purrr::map2_dbl(current_background_errs, prev_background_errs,
+          ~ (.x - .y)^2)
+        out <- c(out, out3)
+      }
 
     } else {
       browser()
