@@ -181,3 +181,31 @@ setGeneric("mccl",
 setGeneric("coef_diff",
   function(object, prev, model_error, background_error)
     standardGeneric("coef_diff"))
+
+#' Compute the difference between the current and previous beta coefficients of
+#'  the underlying linear (mixed) models
+#' @param object The current `FMIter` object
+#' @param prev The previous `FMIter` iteration of the object
+#' @param model_error a logical value indicating whehter including the model
+#'  errors' difference to the output vector
+#' @param background_error a logical value indicating whether including the
+#'  background errors' difference to the output vector
+#' @return the distance between the fixed effect coefficients
+#' @docType methods
+#' @rdname FMIter-methods
+setGeneric("coef_diff_em",
+  function(object, prev, model_error, background_error)
+    standardGeneric("coef_diff_em"))
+
+#' Computes the FMHighLD's model likelihood
+#' @param object The `FMIter` object
+#' @param fmld_data A `data.frame` with the response and annotatation matrix
+#' @param noncand_prob A numeric value indicating the probabiltiy of a variant
+#'  that wasn't selected as causal candidate to be no-causal. The probability of
+#'  being in one of the causal classes is going to be equally distributed among
+#'  all elements in the mixture
+#' @return The likelihood of the FMHighLD model
+#' @docType methods
+#' @rdname FMIter-methods
+setGeneric("likelihood",
+  function(object, fmld_data, noncand_prob) standardGeneric("likelihood"))

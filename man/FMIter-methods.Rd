@@ -9,13 +9,17 @@
 \alias{prob_metric}
 \alias{mccl}
 \alias{coef_diff}
+\alias{coef_diff_em}
+\alias{likelihood}
 \alias{models,FMIter-method}
 \alias{probmatrix,FMIter-method}
 \alias{sigma0,FMIter-method}
 \alias{causal_candidates,FMIter-method}
 \alias{prob_metric,FMIter,FMIter-method}
+\alias{likelihood,FMIter,data.frame,numeric-method}
 \alias{mccl,FMIter,FMIter-method}
 \alias{coef_diff,FMIter,FMIter,logical,logical-method}
+\alias{coef_diff_em,FMIter,FMIter,logical,logical-method}
 \title{models method}
 \usage{
 models(object)
@@ -32,6 +36,10 @@ mccl(object, prev)
 
 coef_diff(object, prev, model_error, background_error)
 
+coef_diff_em(object, prev, model_error, background_error)
+
+likelihood(object, fmld_data, noncand_prob)
+
 \S4method{models}{FMIter}(object)
 
 \S4method{probmatrix}{FMIter}(object)
@@ -42,12 +50,16 @@ coef_diff(object, prev, model_error, background_error)
 
 \S4method{prob_metric}{FMIter,FMIter}(object, prev)
 
+\S4method{likelihood}{FMIter,data.frame,numeric}(object, fmld_data, noncand_prob)
+
 \S4method{mccl}{FMIter,FMIter}(object, prev)
 
 \S4method{coef_diff}{FMIter,FMIter,logical,logical}(object, prev, model_error, background_error)
+
+\S4method{coef_diff_em}{FMIter,FMIter,logical,logical}(object, prev, model_error, background_error)
 }
 \arguments{
-\item{object}{The current `FMIter` object}
+\item{object}{The `FMIter` object}
 
 \item{response}{the vector of all the z-values in the FMHighLD model}
 
@@ -58,6 +70,13 @@ errors' difference to the output vector}
 
 \item{background_error}{a logical value indicating whether including the
 background errors' difference to the output vector}
+
+\item{fmld_data}{A `data.frame` with the response and annotatation matrix}
+
+\item{noncand_prob}{A numeric value indicating the probabiltiy of a variant
+that wasn't selected as causal candidate to be no-causal. The probability of
+being in one of the causal classes is going to be equally distributed among
+all elements in the mixture}
 }
 \value{
 a list of linear models for single trait or linear mixed models for
@@ -76,6 +95,10 @@ the mean one-zero loss of causal candidates variants between the
  current and previous iteration
 
 the distance between the fixed effect coefficients
+
+the distance between the fixed effect coefficients
+
+The likelihood of the FMHighLD model
 }
 \description{
 `models` return the list of models estimated in the `FMHighLD` iteration

@@ -48,14 +48,22 @@ build_design_matrix <- function(data, beta) {
 #' @param annot_names names of the annotation variables to ignore the variants
 #'  with `norm2(annot)` close to zero
 #' @importFrom stats formula terms coef model.matrix
+#' @importFrom flexmix predict
 select_causals_single <- function(data, model, fm_param, group, annot_names) {
 
-  model_formula <- stats::formula(model)
-  response <- as.character(model_formula)[2]
-  beta <- stats::coef(model)
-  design_matrix <- build_design_matrix(data, beta)
-  fitted <- as.numeric(design_matrix %*% beta)
-  residuals <- data[[response]] - fitted
+  if (class(model) == "flexmix") {
+    fitted <- flexmix::predict(model, newdata = data)
+    # we applied `flexmix::relabel`, so in the first column we get the right
+    # slope in the model
+    residuals <- data$response - fitted[[1]][, 1]
+  } else {
+    model_formula <- stats::formula(model)
+    response <- as.character(model_formula)[2]
+    beta <- stats::coef(model)
+    design_matrix <- build_design_matrix(data, beta)
+    fitted <- as.numeric(design_matrix %*% beta)
+    residuals <- data[[response]] - fitted
+  }
 
   causal_rule(data, residuals, fm_param, group, annot_names)
 }

@@ -35,7 +35,8 @@ Imports:
     rlang,
     igraph,
     tibble,
-    S4Vectors
+    S4Vectors,
+    flexmix
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,

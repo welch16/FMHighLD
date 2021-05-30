@@ -33,8 +33,6 @@ noise_cor <- function(corr_matrix, epsilon = .01, eidim = 2) {
 
 }
 
-
-
 #' Simulates a block correlation matrix with constant correlation per block
 #' where the size and base correlation for each block is user specified
 #' @param block_sizes A vector with the dimensions of each block

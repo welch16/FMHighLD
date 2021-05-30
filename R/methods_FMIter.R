@@ -54,6 +54,58 @@ setMethod("prob_metric",
 
 })
 
+
+substitute_weights <- function(i, weight, causal_candidate, gamma) {
+
+  gamma_vec <- rlang::set_names(as.vector(gamma[, i]), causal_candidate)
+  weight[causal_candidate] <- gamma_vec
+  weight
+
+}
+
+#' @rdname FMIter-methods
+#' @aliases likelihood
+#' @docType methods
+setMethod("likelihood",
+  signature = signature(object = "FMIter", fmld_data = "data.frame",
+    noncand_prob = "numeric"),
+  definition = function(object, fmld_data, noncand_prob) {
+
+    # browser()
+    if (object@singletrait) {
+      fmld_data <- as.data.frame(fmld_data)
+      fmld_data <- tibble::column_to_rownames(fmld_data, "snp")
+      nmixtures <- length(object@models)
+      weights <- replicate(nmixtures, {
+        rlang::set_names(
+          rep((1 - noncand_prob) / nmixtures, object@nassoc),
+          rownames(fmld_data))}, simplify = FALSE)
+      weights <- purrr::pmap(
+        list(seq_along(weights) + 1, weights, object@causal_candidates),
+        substitute_weights, object@gamma)
+      preds <- purrr::map(weights, ~ dplyr::mutate(fmld_data, w = .))
+      preds <- purrr::map2(object@models, preds, stats::predict)
+      preds <- c(list(
+        rlang::set_names(rep(0, object@nassoc), rownames(fmld_data))),
+        preds)
+      fz <- purrr::map2(preds, object@sigma[1, ],
+        ~ stats::dnorm(fmld_data$response, .x, .y, FALSE))
+      pi <- colSums(as.matrix(object@gamma))
+      pi <- pi / sum(pi)
+
+      likelihood <- prod(rowSums(do.call(cbind, purrr::map2(fz, pi, `*`))))
+
+    } else {
+    
+      browser()
+      x
+
+    }
+
+    likelihood
+})
+
+
 #' @rdname FMIter-methods
 #' @aliases mccl
 #' @docType methods
@@ -89,15 +141,49 @@ setMethod("coef_diff",
         prev_background_errs <- 0
       }
 
-      out1 <- purrr::map2_dbl(current_coefs, prev_coefs, ~ (.x - .y)^2)
+      out1 <- purrr::map2_dbl(current_coefs, prev_coefs, ~ sum((.x - .y)^2))
       out <- out1
       if (model_error) {
-        out2 <- purrr::map2_dbl(current_errs, prev_errs, ~ (.x - .y)^2)
+        out2 <- purrr::map2_dbl(current_errs, prev_errs, ~ sum((.x - .y)^2))
         out <- c(out, out2)
       }
       if (background_error) {
         out3 <- purrr::map2_dbl(current_background_errs, prev_background_errs,
           ~ (.x - .y)^2)
+        out <- c(out, out3)
+      }
+
+    } else {
+      browser()
+      object
+    }
+    out
+})
+
+#' @rdname FMIter-methods
+#' @aliases coef_diff
+#' @docType methods
+#' @importFrom flexmix parameters
+setMethod("coef_diff_em",
+  signature = signature(object = "FMIter", prev = "FMIter",
+    model_error = "logical", background_error = "logical"),
+  definition = function(object, prev, model_error, background_error) {
+
+    if (object@singletrait) {
+
+      current_params <- purrr::map(models(object), flexmix::parameters)
+      prev_params <- purrr::map(models(prev), flexmix::parameters)
+      out1 <- purrr::map2_dbl(current_params, prev_params,
+        ~ sum((.x[[1]][1:2, 1] - .y[[1]][1:2, 1])^2))
+      out <- out1
+      if (model_error) {
+        out2 <- purrr::map2_dbl(current_params, prev_params,
+          ~ sum((.x[[1]][3, 1] - .y[[1]][3, 1])^2))
+        out <- c(out, out2)
+      }
+      if (background_error) {
+        out3 <- purrr::map2_dbl(current_params, prev_params,
+          ~ (.x[[2]][2, 2] - .y[[2]][2, 2])^2)
         out <- c(out, out3)
       }
 

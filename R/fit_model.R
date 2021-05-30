@@ -179,8 +179,10 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
 
   continue <- TRUE
   current_iter <- init
+  
 
   while (continue) {
+    # browser()
     iter <- iter + 1
     # if (iter > 10) browser()
     prev_iter <- current_iter
@@ -230,9 +232,11 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
     coef_diff <- coef_diff(current_iter, prev_iter, FALSE, FALSE)
     pl <- philips(c(entropy_vec[2], mccl_vec, coef_diff))
 
+    curr_like <- likelihood(current_iter, fmld_data, 1 - 1e-3)
     print(iter)
-    print(purrr::map_dbl(models(current_iter), coef))
+    print(purrr::map(models(current_iter), coef))
     print(stringr::str_c("pl: ", pl))
+    print(stringr::str_c("loglikeli: ", log(curr_like)))
 
     continue <- iter < max_iter & pl >= min_tol
 
@@ -265,9 +269,6 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
   print(round(compute_mixture_prob(probmatrix(current_iter)), 2))
   current_iter
 }
-
-
-
 
 iterative_select_causal_init <- function(train_data,
                                       model_formula,
