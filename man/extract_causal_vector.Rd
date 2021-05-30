@@ -12,7 +12,7 @@ which_snp}
 }
 \value{
 a list of the same length as `causal_list` with two names character
- vectors with the causal candidate snps
+ vectors with the causal candidate SNPs
 }
 \description{
 extract causal candidate vectors

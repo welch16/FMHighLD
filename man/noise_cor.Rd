@@ -21,7 +21,7 @@ a simulated correlation matrix
 adds noise to a user specific matrix
 }
 \note{
-Based on Hardin et al, "A method for generating realistic
+Based on Hardin et. al., "A method for generating realistic
 correlation matrices", Annals of Applied Statistics (2012)
 }
 \examples{

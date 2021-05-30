@@ -1,12 +1,12 @@
 #' Simulated the allelic skew from a gaussian mixture with to components and
 #' including a peak overlap event
-#' @param n number of snps
+#' @param n number of SNPs
 #' @param p probability of being in each component
 #' @param q probability of don't overlapping a peak overlap
 #' @param mean mean of the gaussian mixtures (one is N(mean, sd) and the other
 #'  is N(-mean, sd))
 #' @param sd std. deviation of the allelic skew
-#' @return the simulated allelic skew for n snps
+#' @return the simulated allelic skew for n SNPs
 #' @importFrom stats rnorm runif
 #' @export
 #' @examples

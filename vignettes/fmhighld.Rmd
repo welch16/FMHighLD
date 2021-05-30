@@ -1,12 +1,265 @@
 ---
 title: "Using FMHighLD"
-author: "Vignette Author"
+author: "Rene Welch, Kwangmoon Park and Sunduz Keles"
 package: FMHighLD
 output: 
   BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{Using FMHighLD}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{rmarkdown::render}
   %\VignetteEncoding{UTF-8}  
 ---
 
+this is a test
+
+```{r example, include = FALSE, eval = FALSE}
+
+library(magrittr)
+library(tidyverse)
+library(devtools)
+library(flexmix)
+load_all()
+
+set.seed(12345)
+nsnps <- 2000
+nldblocks <- 200
+snp_names <- stringr::str_c("snp", seq_len(nsnps))
+
+ld_mat <- sim_block_cor(
+  block_sizes = rep(nsnps / nldblocks, nldblocks),
+  corrs = rep(.8, nldblocks),
+  delta = .2,
+  epsilon = .1,
+  eidim = 2)
+
+rownames(ld_mat) <- colnames(ld_mat) <- snp_names
+
+skew <- sim_skew(nsnps, p = 0.5, q = .9, mean = 4, sd = 1)
+skew_mat <- as.matrix(skew, ncol = 1)
+rownames(skew_mat) <- snp_names
+colnames(skew_mat) <- "annot"
+
+ld_clusters <- get_ld_clusters(ld_matrix = ld_mat, 0.7)
+
+causals <- split(ld_clusters, ld_clusters) %>%
+  purrr::map(~ sample(., 1)) %>%
+  purrr::map_chr(names)
+
+snp_data <- tibble::tibble(
+  snp = snp_names,
+  ld_cluster = ld_clusters) %>%
+  dplyr::mutate(
+    causal = if_else(snp %in% causals, 1, 0),
+    skew) %>%
+  dplyr::mutate(
+    z = rnorm(nsnps, if_else(causal == 1, 0 +  1 * skew, 0.0), sd = .5))
+
+response <- snp_data$z
+names(response) <- snp_names
+
+true_data <- snp_data %>%
+  dplyr::filter(causal == 1) %>%
+  dplyr::select((-causal))
+
+true_model <- lm(z ~ 0 + skew, data = as.data.frame(true_data) %>%
+  tibble::column_to_rownames("snp"))
+
+true_data %<>%
+  dplyr::mutate(res = residuals(true_model)[true_data$snp]^2)
+
+# select_causals_single(snp_data, true_model, FMParam(max_iter = 20),
+#   "ld_cluster", "skew") %>%
+#   dplyr::inner_join(
+#     true_data, by = "ld_cluster")
+
+# true_model
+
+# fmld_fit <- fmhighld_fit(
+#   response, skew_mat, ld_clusters,
+#   singletrait = TRUE, ncausal_mixt = 1,
+#   formula = response ~ 0 + annot,
+#   # init_coef_mean = true_model$coefficients,
+#   skip_causal = FALSE, fm_param = FMParam(strategy = "none",
+#     min_tol = 1e-3, max_iter = 100, annot_tol = 1e-2),
+#   save_iter = FALSE, verbose = FALSE)
+
+load_all()
+fmld_fit <- fmhighld_fit_em(
+  response, skew_mat, ld_clusters,
+  singletrait = TRUE,
+  formula = response ~ 1 + annot,
+  # init_coef_mean = true_model$coefficients,
+  skip_causal = FALSE, fm_param = FMParam(strategy = "none",
+    min_tol = 1e-3, max_iter = 50, annot_tol = 1e-2),
+  save_iter = FALSE, verbose = TRUE)
+
+tibble::tibble(id = seq_along(fmld_fit$loglike),
+  loglike = fmld_fit$loglike) %>%
+  ggplot(aes(id, loglike)) + geom_line()
+
+
+
+fmld_fit$all_models[[which.max(fmld_fit$loglike)]] %>%
+  flexmix::relabel() %>%
+  flexmix::parameters() -> pps
+
+true_data
+
+causal_tibble <- function(fit) {
+
+  tibble::tibble(
+    ld_cluster = names(fit@causal_candidates[[1]]),
+    snp_causal = fit@causal_candidates[[1]])
+
+}
+
+true_data %>%
+  inner_join(causal_tibble(fmld_fit)) %>%
+  dplyr::filter(snp != snp_causal)
+  
+
+
+  
+
+tt <- replicate(500, {
+
+  fmodel1 <- flexmix::FLXMRglm(~ skew, family = "gaussian")
+  fmodel2 <- flexmix::FLXMRglm(family = "gaussian")
+  # fmodel3 <- flexmix::FLXMRglm(~ 0 + skew, family = "gaussian")
+
+  data <- snp_data %>%
+    group_by(ld_cluster) %>%
+    sample_n(1) %>%
+    ungroup()
+
+  flexfit <- flexmix(z ~ 1, k = 2, data = data,
+    model = list(fmodel1, fmodel2))
+
+})
+
+tt  %>%
+  map(relabel) %>%
+  map(parameters) %>%
+  map(1) %>%
+  map_dbl(~.[2,1]) %>%
+  tibble(x = .) %>%
+  ggplot(aes(x))+ geom_histogram(bins = 21) +
+  geom_vline(xintercept = 1, linetype = 2, colour = "red")
+
+# algorithm 
+# 0. take seed
+# 1. fit flexmix model cem
+# 2. among the snps that are in the slope model pick the snps
+#     that are closest to linear model
+# 3. repeat until convergence?
+
+flexmix::predict(tt[[1]], data =newdata) %>% str()
+
+tt %>% map(parameters) %>% pluck(3)
+ 
+AIC(fit_model)
+BIC(fit_model)
+
+flexmix::predict(fit_model) %>% str
+
+
+fit_model %>% class
+
+fit_model0 <- flexmix::initFlexmix(z ~ skew, nrep = 10, k = 2,
+  data = snp_data, model = list(fmodel1, fmodel2))
+
+fit_model1 <- flexmix::stepFlexmix(z ~ skew, nrep = 10, k = 2,
+  data = snp_data, model = list(fmodel1, fmodel2))
+
+parameters(fit_model0)
+parameters(fit_model1)
+
+# flexmix::FLXMRglm
+pps <- parameters(flexfit)
+
+snp_data %>%
+  dplyr::mutate(cl = flexmix::clusters(fit_model)) %>%
+  dplyr::select(causal, cl) %>% table()
+
+
+```
+
+
+
+```{r skew-vs-z, include = FALSE, echo = FALSE, eval = FALSE}
+
+snp_data %>%
+  ggplot(aes(skew, z, colour = factor(causal))) +
+  geom_point() +
+  scale_color_manual(values = c(`1` = "navyblue", `0` = "lightgray")) +
+  theme_minimal() +
+  theme(legend.position = "top") +
+  labs(colour = "causal", x = "skew", y = "z") +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_vline(xintercept = 0, linetype = 2) +
+  # geom_smooth(method = "lm", formula = y ~ 0 + x, se = FALSE,
+  #   show.legend = FALSE) +
+  geom_smooth(method = "lm", formula = y ~ 0 + x, se = FALSE,
+    aes(group = 1), colour = "red") +
+  geom_abline(slope = pps[[1]][2, 1], intercept = pps[[1]][1, 1],
+    colour = "magenta") +
+  geom_abline(slope = 0, intercept = pps[[2]][1, 1], colour = "darkgreen",
+    linetype = 2)
+    
+```
+
+```{r skew-vs-z-strat, include = FALSE, echo = FALSE, eval = FALSE}
+
+snp_data %>%
+  dplyr::mutate(ld_cluster = forcats::fct_reorder(ld_clusters,
+    as.numeric(stringr::str_remove(ld_clusters, "ld")))) %>%
+  ggplot(aes(skew, z, size = factor(causal))) +
+  geom_point() +
+  scale_size_manual(values = c(`1` = 3, `0` = 1)) +
+  theme_bw() +
+  theme(legend.position = "top") +
+  labs(x = "skew", y = "z") +
+  facet_wrap(~ ld_cluster, nrow = 5) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_vline(xintercept = 0, linetype = 2) +
+  ggrepel::geom_text_repel(aes(label = snp), colour = "black", size = 3)
+  
+
+```
+
+```{r, include=FALSE,echo=FALSE,eval=FALSE}
+
+linear_model <- function(data) {
+
+  lm(z ~ 0 + skew, data = data) %>%
+    coef()
+
+}
+
+nsims <- 1e3
+set.seed(123)
+ss <- replicate(nsims, {
+  snp_data %>%
+    group_by(ld_cluster) %>%
+    sample_n(1) %>%
+    linear_model()
+})
+
+truth <- snp_data %>% filter(causal == 1) %>% linear_model()
+
+
+tibble(ss) %>%
+  ggplot(aes(ss)) + geom_histogram() +
+  geom_vline(xintercept = truth, colour = "red", linetype = 2) +
+  theme(axis.title.x = element_blank())
+  
+
+
+# out of 5e3 replications, there is no version getting a close value to the
+# true slope
+
+# the truth gets something close, so the linear model coefficients
+# are valuable as a proxy of the true causals
+
+
+```

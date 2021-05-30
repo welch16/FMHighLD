@@ -191,7 +191,7 @@ causal_rule <- function(data, residuals, fm_param, group, annot_names) {
 #' @importFrom stats runif
 select_kth_random <- function(res, prob = 0.5, k = 2) {
   nsnps <- length(res)
-  
+
   if (nsnps == 1) {
     1
   } else {

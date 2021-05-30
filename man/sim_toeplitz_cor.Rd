@@ -31,7 +31,7 @@ Calculates an AR(1) Toeplitz matrix with a block diagonal structure. The size
 and base correlation for each block is user specified
 }
 \note{
-Based on Hardin et al, "A method for generating realistic
+Based on Hardin et. al., "A method for generating realistic
 correlation matrices", Annals of Applied Statistics (2012)
 }
 \examples{

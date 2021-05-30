@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{philips}
 \alias{philips}
-\title{Computes the philips stopping criteria acrosss all distances}
+\title{Computes the philips stopping criteria across all distances}
 \usage{
 philips(x)
 }
@@ -13,5 +13,5 @@ philips(x)
 the philips stopping criteria
 }
 \description{
-Computes the philips stopping criteria acrosss all distances
+Computes the philips stopping criteria across all distances
 }

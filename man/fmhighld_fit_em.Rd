@@ -25,7 +25,7 @@ is named after the trait for which the association was tested.}
 \item{annot_matrix}{a matrix with same number of rows as variants and number
 of columns as annotations}
 
-\item{ld_clusters}{a character vector with the ld cluster to which each
+\item{ld_clusters}{a character vector with the LD cluster to which each
 variant belongs}
 
 \item{singletrait}{a logical indicator determining if the model is for

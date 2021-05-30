@@ -32,8 +32,8 @@ setGeneric("params_all",
 #'
 #' `params_pickm` returns a list with the randomization probability to
 #' be used by `FMHighLD`, the  absolute residual rank to select another
-#' causal candidate, the number of ld groups to apply the randomization
-#' strategy and the method used to pick those ld groups
+#' causal candidate, the number of LD groups to apply the randomization
+#' strategy and the method used to pick those LD groups
 #' @param object A `FMParam` object.
 #' @return The randomization probability to be used by `FMHighLD` and the
 #' absolute residual rank to select another causal candidate
@@ -140,7 +140,7 @@ setGeneric("sigma0",
 #'
 #' Gets lists of causal candidates for every mixture
 #' @param object a `FMIter` object
-#' @return a list of causal candidates for every mixture componet
+#' @return a list of causal candidates for every mixture component
 #' @docType methods
 #' @rdname FMIter-methods
 #' @export
@@ -186,7 +186,7 @@ setGeneric("coef_diff",
 #'  the underlying linear (mixed) models
 #' @param object The current `FMIter` object
 #' @param prev The previous `FMIter` iteration of the object
-#' @param model_error a logical value indicating whehter including the model
+#' @param model_error a logical value indicating whether including the model
 #'  errors' difference to the output vector
 #' @param background_error a logical value indicating whether including the
 #'  background errors' difference to the output vector
@@ -199,8 +199,8 @@ setGeneric("coef_diff_em",
 
 #' Computes the FMHighLD's model likelihood
 #' @param object The `FMIter` object
-#' @param fmld_data A `data.frame` with the response and annotatation matrix
-#' @param noncand_prob A numeric value indicating the probabiltiy of a variant
+#' @param fmld_data A `data.frame` with the response and annotation matrix
+#' @param noncand_prob A numeric value indicating the probability of a variant
 #'  that wasn't selected as causal candidate to be no-causal. The probability of
 #'  being in one of the causal classes is going to be equally distributed among
 #'  all elements in the mixture

@@ -13,7 +13,7 @@
 #' @export
 #' @examples
 #' noise_cor(diag(15), epsilon = .5, eidim=2)
-#' @note Based on Hardin et al, "A method for generating realistic
+#' @note Based on Hardin et. al., "A method for generating realistic
 #' correlation matrices", Annals of Applied Statistics (2012)
 #' @export
 #' @importFrom Matrix crossprod
@@ -50,7 +50,7 @@ noise_cor <- function(corr_matrix, epsilon = .01, eidim = 2) {
 #' sim_block_cor(
 #'  block_sizes = c(10, 5), corrs = rho_block, delta = 0.39,
 #'  epsilon = eps_block, eidim = 2)
-#' @note Based on Hardin et al, "A method for generating realistic
+#' @note Based on Hardin et. al., "A method for generating realistic
 #' correlation matrices", Annals of Applied Statistics (2012)
 #' @export
 sim_block_cor <- function(block_sizes = c(10, 5, 8, 2, 15, 50),
@@ -91,7 +91,7 @@ sim_block_cor <- function(block_sizes = c(10, 5, 8, 2, 15, 50),
 #' eps_top = (1-max(rho_top))/(1+max(rho_top)) - .01
 #' sim_toeplitz_cor(block_sizes=c(10, 5), corrs = rho_top,
 #'  epsilon = eps_top, eidim = 2)
-#' @note Based on Hardin et al, "A method for generating realistic
+#' @note Based on Hardin et. al., "A method for generating realistic
 #' correlation matrices", Annals of Applied Statistics (2012)
 #' @export
 sim_toeplitz_cor <- function(block_sizes = c(10, 5, 8, 2, 15, 50),
@@ -157,7 +157,7 @@ rho_hub_aux <- function(r_max, r_min, power, p) {
 #' sim_hub_cor(block_sizes = c(10, 5),
 #'  max_corrs = rho_hub, min_corrs = c(.7,.6),
 #'  power = 1, epsilon = eps_hub, eidim=2)
-#' @note Based on Hardin et al, "A method for generating realistic
+#' @note Based on Hardin et. al., "A method for generating realistic
 #' correlation matrices", Annals of Applied Statistics (2012)
 #' @export
 sim_hub_cor <- function(
@@ -194,16 +194,16 @@ sim_hub_cor <- function(
 
 #' Get the LD clusters out of an LD matrix
 #' @param ld_matrix a square matrix with the squared correlation between every
-#'  pair of snps in a locus.
-#' @param min_r2 min. R^2 for two snps to be in the same LD cluster
+#'  pair of SNPs in a locus.
+#' @param min_r2 min. R^2 for two SNPs to be in the same LD cluster
 #' @param snps a named position vector, `IRanges::IRanges` or
 #'  `GRanges::GenomicRanges` object to account for genomic distance between
-#'  snps when clustering them.
-#' @param max_dist max. distance between snps. When the snps vector is `NULL`.
-#'  The function will assume that the distance is one between adjacent snps.
+#'  SNPs when clustering them.
+#' @param max_dist max. distance between SNPs. When the SNPs vector is `NULL`.
+#'  The function will assume that the distance is one between adjacent SNPs.
 #' @param tidy a logical indicator to return a `tibble::tibble` with `snp` and
 #'  `cluster` columns
-#' @return a membership ld cluster vector
+#' @return a membership LD cluster vector
 #' @export
 #' @importFrom S4Vectors start
 #' @importFrom igraph clusters graph_from_adjacency_matrix

@@ -20,19 +20,19 @@ FMIter(
 \item{nassoc}{a numeric variable with the number of association tested
 in the experiment}
 
-\item{singletrait}{a logical indicator determininig if we are considering a
+\item{singletrait}{a logical indicator determining if we are considering a
 single trait or multiple traits}
 
 \item{models}{a list with the models in the mixture}
 
 \item{causal_candidates}{a list of the same length as `models` made with
-vectors of causal candidate snps per each valid trait - ld cluster
+vectors of causal candidate SNPs per each valid trait - LD cluster
 combination}
 
-\item{gamma}{a matrix with the posterior probabilities of a snps belonging to
+\item{gamma}{a matrix with the posterior probabilities of a SNPs belonging to
 any element in the mixture}
 
-\item{mu}{a matrix with the predicted values of every snp with each column
+\item{mu}{a matrix with the predicted values of every SNP with each column
 being an element in the mixture}
 
 \item{sigma}{a matrix with the variances of every normal distributions in the

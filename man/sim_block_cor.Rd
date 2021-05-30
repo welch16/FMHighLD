@@ -34,7 +34,7 @@ Simulates a block correlation matrix with constant correlation per block
 where the size and base correlation for each block is user specified
 }
 \note{
-Based on Hardin et al, "A method for generating realistic
+Based on Hardin et. al., "A method for generating realistic
 correlation matrices", Annals of Applied Statistics (2012)
 }
 \examples{

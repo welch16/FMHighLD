@@ -8,7 +8,7 @@ including a peak overlap event}
 sim_skew(n, p = 0.5, q = NULL, mean = 0, sd = 1)
 }
 \arguments{
-\item{n}{number of snps}
+\item{n}{number of SNPs}
 
 \item{p}{probability of being in each component}
 
@@ -20,7 +20,7 @@ is N(-mean, sd))}
 \item{sd}{std. deviation of the allelic skew}
 }
 \value{
-the simulated allelic skew for n snps
+the simulated allelic skew for n SNPs
 }
 \description{
 Simulated the allelic skew from a gaussian mixture with to components and

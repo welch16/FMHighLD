@@ -5,7 +5,7 @@
 #'  is named after the trait for which the association was tested.
 #' @param annot_matrix a matrix with same number of rows as variants and number
 #'  of columns as annotations
-#' @param ld_clusters a character vector with the ld cluster to which each
+#' @param ld_clusters a character vector with the LD cluster to which each
 #'  variant belongs
 #' @param singletrait  a logical indicator determining if the model is for
 #'  multi_trait or single-trait fine-mapping

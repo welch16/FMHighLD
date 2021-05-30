@@ -65,15 +65,15 @@ likelihood(object, fmld_data, noncand_prob)
 
 \item{prev}{The previous `FMIter` iteration of the object}
 
-\item{model_error}{a logical value indicating whehter including the model
+\item{model_error}{a logical value indicating whether including the model
 errors' difference to the output vector}
 
 \item{background_error}{a logical value indicating whether including the
 background errors' difference to the output vector}
 
-\item{fmld_data}{A `data.frame` with the response and annotatation matrix}
+\item{fmld_data}{A `data.frame` with the response and annotation matrix}
 
-\item{noncand_prob}{A numeric value indicating the probabiltiy of a variant
+\item{noncand_prob}{A numeric value indicating the probability of a variant
 that wasn't selected as causal candidate to be no-causal. The probability of
 being in one of the causal classes is going to be equally distributed among
 all elements in the mixture}
@@ -87,7 +87,7 @@ in the latest EM iteration
 
 the std. deviation of the non-causal mixture
 
-a list of causal candidates for every mixture componet
+a list of causal candidates for every mixture component
 
 a vector with the jsd metric for every mixture components
 

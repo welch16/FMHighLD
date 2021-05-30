@@ -62,18 +62,18 @@ setValidity("FMParam",
 #' For the `all` strategy, it will pick the the `k`-th variant (in terms of
 #' their absolute(residual) with probability `prob`. Finally, for the `pick_m`
 #' strategy, the `FMHighLD` algorithm will apply a similar strategy but for `m`
-#' ld groups. The `m` ld groups will be selected randomly if `m_strat` is equal
-#' to any, or like the top `m` ld groups with highest average LD score
+#' LD groups. The `m` LD groups will be selected randomly if `m_strat` is equal
+#' to any, or like the top `m` LD groups with highest average LD score
 #' @param prob probability used to randomize the causal candidate, by default
 #' it is 0.95
 #' @param k absolute residual index of the causal candidate to select with
 #' probability `prob`.  The default this strategy will selected the variant with
 #' the second rank
-#' @param m number of ld groups for m_sel the randomization strategy is going to
-#' be applied. By default, it will apply the strategy to only one ld group.
-#' @param m_sel Selection strategy to pick the `m` ld groups to be randomized.
+#' @param m number of LD groups for m_sel the randomization strategy is going to
+#' be applied. By default, it will apply the strategy to only one LD group.
+#' @param m_sel Selection strategy to pick the `m` LD groups to be randomized.
 #' By default, it will pick the `m` groups randomly. Alternatively, it could
-#' also select the `m` groups by their highest average ld score. Either one of
+#' also select the `m` groups by their highest average LD score. Either one of
 #' `random` or `large_ld`.
 #' @param error_bound a double constant indicating the min value used to avoid
 #'  zero denominators
@@ -159,15 +159,15 @@ setValidity("FMIter",
 #' `FMIter` contains the elements of an iteration for the FMHighLD algorithm
 #' @param nassoc a numeric variable with the number of association tested
 #'  in the experiment
-#' @param singletrait a logical indicator determininig if we are considering a
+#' @param singletrait a logical indicator determining if we are considering a
 #'  single trait or multiple traits
 #' @param models a list with the models in the mixture
 #' @param causal_candidates a list of the same length as `models` made with
-#'  vectors of causal candidate snps per each valid trait - ld cluster
+#'  vectors of causal candidate SNPs per each valid trait - LD cluster
 #'  combination
-#' @param gamma a matrix with the posterior probabilities of a snps belonging to
+#' @param gamma a matrix with the posterior probabilities of a SNPs belonging to
 #'  any element in the mixture
-#' @param mu a matrix with the predicted values of every snp with each column
+#' @param mu a matrix with the predicted values of every SNP with each column
 #'  being an element in the mixture
 #' @param sigma a matrix with the variances of every normal distributions in the
 #'  mixture.

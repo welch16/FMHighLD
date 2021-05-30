@@ -13,7 +13,7 @@ the linear mixed model random effects}
 \item{residual_error}{a vector with the residual errors of the
 linear mixed model used by FM-HighLD}
 
-\item{re_error}{a vector with the random effect erros of the linear
+\item{re_error}{a vector with the random effect errors of the linear
 mixed model used by FM-HighLD}
 }
 \value{

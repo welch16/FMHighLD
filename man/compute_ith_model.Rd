@@ -19,7 +19,7 @@ variants, but the model is performed for a list in case more models are
 being fitted for the locus}
 
 \item{causal_candidates}{a vector of the causal candidates selected for each
-ld cluster}
+LD cluster}
 
 \item{formula}{formula used for fitting the underlying linear model used by
 FM-HighLD}

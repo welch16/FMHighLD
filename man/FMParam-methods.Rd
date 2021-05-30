@@ -73,8 +73,8 @@ candidate
 
 `params_pickm` returns a list with the randomization probability to
 be used by `FMHighLD`, the  absolute residual rank to select another
-causal candidate, the number of ld groups to apply the randomization
-strategy and the method used to pick those ld groups
+causal candidate, the number of LD groups to apply the randomization
+strategy and the method used to pick those LD groups
 
 `error_bound` returns a constant indicating the min. values used to avoid
 zero denominators

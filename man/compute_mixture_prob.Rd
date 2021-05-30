@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_model.R
 \name{compute_mixture_prob}
 \alias{compute_mixture_prob}
-\title{Compute the mixture probabilities from a probabiltiy matrix}
+\title{Compute the mixture probabilities from a probability matrix}
 \usage{
 compute_mixture_prob(prob_matrix)
 }
@@ -13,7 +13,7 @@ compute_mixture_prob(prob_matrix)
 a vector of length nmixtures
 }
 \description{
-Compute the mixture probabilities from a probabiltiy matrix
+Compute the mixture probabilities from a probability matrix
 }
 \examples{
 compute_mixture_prob(matrix(rep(1, 100), ncol = 2))

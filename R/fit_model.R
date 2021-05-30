@@ -5,11 +5,11 @@
 #'  is named after the trait for which the association was tested.
 #' @param annot_matrix a matrix with same number of rows as variants and number
 #'  of columns as annotations
-#' @param ld_clusters a character vector with the ld cluster to which each
+#' @param ld_clusters a character vector with the LD cluster to which each
 #'  variant belongs
 #' @param singletrait  a logical indicator determining if the model is for
 #' multi_trait or single-trait fine-mapping
-#' @return a `tibble::tibble` with at least columns snp, response, ld_cluster
+#' @return a `tibble::tibble` with at least columns SNP, response, ld_cluster
 #'  and the column names of `annot_matrix`. If `singletrait == FALSE`, it will
 #'  also have a `trait column`.
 #' @export
@@ -52,12 +52,12 @@ build_fm_tibble <- function(response, annot_matrix, ld_clusters, singletrait) {
     purrr::partial(dplyr::inner_join, by = "snp"))
 }
 
-#' Gets a sorted vector with the snp names
+#' Gets a sorted vector with the SNP names
 #' @param response Either a numeric vector when `singletrait == TRUE` or a
 #'   list with named vectors when `singletrait == FALSE`
 #' @param singletrait  a logical indicator determining if the model is for
 #' multi_trait or single-trait fine-mapping
-#' @return a sorted character vector with the names of all the snps in the
+#' @return a sorted character vector with the names of all the SNPs in the
 #'   response
 #' @importFrom purrr map
 #' @export
@@ -81,7 +81,7 @@ get_snp_names <- function(response, singletrait) {
   sort(snp_names)
 }
 
-#' Compute the mixture probabilities from a probabiltiy matrix
+#' Compute the mixture probabilities from a probability matrix
 #'
 #' @param prob_matrix a matrix of dimensions nassoc x nmixtures
 #' @return a vector of length nmixtures
@@ -102,7 +102,7 @@ compute_mixture_prob <- function(prob_matrix) {
 #'  is named after the trait for which the association was tested.
 #' @param annot_matrix a matrix with same number of rows as variants and number
 #'  of columns as annotations
-#' @param ld_clusters a character vector with the ld cluster to which each
+#' @param ld_clusters a character vector with the LD cluster to which each
 #'  variant belongs
 #' @param singletrait  a logical indicator determining if the model is for
 #'  multi_trait or single-trait fine-mapping

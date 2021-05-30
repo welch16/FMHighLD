@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_model.R
 \name{get_snp_names}
 \alias{get_snp_names}
-\title{Gets a sorted vector with the snp names}
+\title{Gets a sorted vector with the SNP names}
 \usage{
 get_snp_names(response, singletrait)
 }
@@ -14,11 +14,11 @@ list with named vectors when `singletrait == FALSE`}
 multi_trait or single-trait fine-mapping}
 }
 \value{
-a sorted character vector with the names of all the snps in the
+a sorted character vector with the names of all the SNPs in the
   response
 }
 \description{
-Gets a sorted vector with the snp names
+Gets a sorted vector with the SNP names
 }
 \examples{
 nsnps <- 10

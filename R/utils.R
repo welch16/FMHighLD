@@ -46,7 +46,7 @@ jsd <- function(p1, p2) {
 #'  is named after the trait for which the association was tested.
 #' @param annot_matrix a matrix with same number of rows as variants and number
 #'  of columns as annotations
-#' @param ld_clusters a character vector with the ld cluster to which each
+#' @param ld_clusters a character vector with the LD cluster to which each
 #'  variant belongs
 #' @return a logical indicator determining if the response, annotation matrix
 #'  and ld_clusters variables are named, and whether the names are the same
@@ -123,7 +123,7 @@ has_intercept <- function(formula) {
 #' @param causal_list a list of `tibble::tibble` with columns ld_cluster and
 #'  which_snp
 #' @return a list of the same length as `causal_list` with two names character
-#'  vectors with the causal candidate snps
+#'  vectors with the causal candidate SNPs
 #' @examples
 #' causal_list <- list(tibble::tibble(
 #'  ld_cluster = stringr::str_c("ld", 1:2),
@@ -171,7 +171,7 @@ lm_std_err <- function(lm_model) {
   coef(summary(lm_model))[, "Std. Error"]
 }
 
-#' Computes the philips stopping criteria acrosss all distances
+#' Computes the philips stopping criteria across all distances
 #'
 #' @param x a vector of losses between current and previous iterations
 #' @return the philips stopping criteria

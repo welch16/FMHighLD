@@ -25,8 +25,8 @@ function are `NULL` the strategy is going to be `none`.
 For the `all` strategy, it will pick the the `k`-th variant (in terms of
 their absolute(residual) with probability `prob`. Finally, for the `pick_m`
 strategy, the `FMHighLD` algorithm will apply a similar strategy but for `m`
-ld groups. The `m` ld groups will be selected randomly if `m_strat` is equal
-to any, or like the top `m` ld groups with highest average LD score}
+LD groups. The `m` LD groups will be selected randomly if `m_strat` is equal
+to any, or like the top `m` LD groups with highest average LD score}
 
 \item{prob}{probability used to randomize the causal candidate, by default
 it is 0.95}
@@ -35,12 +35,12 @@ it is 0.95}
 probability `prob`.  The default this strategy will selected the variant with
 the second rank}
 
-\item{m}{number of ld groups for m_sel the randomization strategy is going to
-be applied. By default, it will apply the strategy to only one ld group.}
+\item{m}{number of LD groups for m_sel the randomization strategy is going to
+be applied. By default, it will apply the strategy to only one LD group.}
 
-\item{m_sel}{Selection strategy to pick the `m` ld groups to be randomized.
+\item{m_sel}{Selection strategy to pick the `m` LD groups to be randomized.
 By default, it will pick the `m` groups randomly. Alternatively, it could
-also select the `m` groups by their highest average ld score. Either one of
+also select the `m` groups by their highest average LD score. Either one of
 `random` or `large_ld`.}
 
 \item{error_bound}{a double constant indicating the min value used to avoid

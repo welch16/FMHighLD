@@ -8,22 +8,22 @@ get_ld_clusters(ld_matrix, min_r2, snps = NULL, max_dist = Inf, tidy = FALSE)
 }
 \arguments{
 \item{ld_matrix}{a square matrix with the squared correlation between every
-pair of snps in a locus.}
+pair of SNPs in a locus.}
 
-\item{min_r2}{min. R^2 for two snps to be in the same LD cluster}
+\item{min_r2}{min. R^2 for two SNPs to be in the same LD cluster}
 
 \item{snps}{a named position vector, `IRanges::IRanges` or
 `GRanges::GenomicRanges` object to account for genomic distance between
-snps when clustering them.}
+SNPs when clustering them.}
 
-\item{max_dist}{max. distance between snps. When the snps vector is `NULL`.
-The function will assume that the distance is one between adjacent snps.}
+\item{max_dist}{max. distance between SNPs. When the SNPs vector is `NULL`.
+The function will assume that the distance is one between adjacent SNPs.}
 
 \item{tidy}{a logical indicator to return a `tibble::tibble` with `snp` and
 `cluster` columns}
 }
 \value{
-a membership ld cluster vector
+a membership LD cluster vector
 }
 \description{
 Get the LD clusters out of an LD matrix

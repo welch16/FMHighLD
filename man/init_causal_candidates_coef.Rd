@@ -3,7 +3,7 @@
 \name{init_causal_candidates_coef}
 \alias{init_causal_candidates_coef}
 \title{Initializes the causal candidates before fitting the model by picking the
-snps based on a model with sampled random coefficients from a normal
+SNPs based on a model with sampled random coefficients from a normal
 distribution centered around the `init_coef_mean`}
 \usage{
 init_causal_candidates_coef(
@@ -31,13 +31,14 @@ a normal distribution}
 \item{fm_param}{a `FMParam` object with the parameters used to run `FMHighLD`}
 }
 \value{
-a list of length `ncausal_mixt` with a vector of one causal candida-
- te per ld group (if `singletrait = TRUE`) or per combination of ld_group
+a list of length `ncausal_mixt` with a vector of one causal
+ candidate per LD group (if `singletrait = TRUE`) or per combination
+ of ld_group
  and trait if (`singletrait = FALSE`)
 }
 \description{
 Initializes the causal candidates before fitting the model by picking the
-snps based on a model with sampled random coefficients from a normal
+SNPs based on a model with sampled random coefficients from a normal
 distribution centered around the `init_coef_mean`
 }
 \examples{

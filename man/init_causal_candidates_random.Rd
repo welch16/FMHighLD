@@ -16,9 +16,9 @@ multi_trait or single-trait fine-mapping}
 \item{ncausal_mixt}{the number of mixtures used in the causal models}
 }
 \value{
-a list of length `ncausal_mixt` with a vector of one causal candida-
- te per ld group (if `singletrait = TRUE`) or per combination of ld_group
- and trait if (`singletrait = FALSE`)
+a list of length `ncausal_mixt` with a vector of one causal
+ candidate per LD group (if `singletrait = TRUE`) or per combination of
+ ld_group and trait if (`singletrait = FALSE`)
 }
 \description{
 Initializes the causal candidates before fitting the model by sampling a

@@ -4,7 +4,7 @@
 #'  variants, but the model is performed for a list in case more models are
 #'  being fitted for the locus
 #' @param causal_candidates a vector of the causal candidates selected for each
-#'  ld cluster
+#'  LD cluster
 #' @param formula formula used for fitting the underlying linear model used by
 #'  FM-HighLD
 #' @param data `data.frame` used for the FM-HighLD model
@@ -74,7 +74,7 @@ init_iteration <- function(formula, init_coef_mean, data, singletrait,
 }
 
 #' Initializes the causal candidates before fitting the model by picking the
-#' snps based on a model with sampled random coefficients from a normal
+#' SNPs based on a model with sampled random coefficients from a normal
 #' distribution centered around the `init_coef_mean`
 #' @param data `data.frame` used for the FM-HighLD model
 #' @param singletrait  a logical indicator determining if the model is for
@@ -84,8 +84,9 @@ init_iteration <- function(formula, init_coef_mean, data, singletrait,
 #'  a normal distribution
 #' @param ncausal_mixt the number of mixtures used in the causal models
 #' @param fm_param a `FMParam` object with the parameters used to run `FMHighLD`
-#' @return a list of length `ncausal_mixt` with a vector of one causal candida-
-#'  te per ld group (if `singletrait = TRUE`) or per combination of ld_group
+#' @return a list of length `ncausal_mixt` with a vector of one causal
+#'  candidate per LD group (if `singletrait = TRUE`) or per combination
+#'  of ld_group
 #'  and trait if (`singletrait = FALSE`)
 #' @importFrom rlang syms set_names
 #' @importFrom dplyr group_by sample_n
@@ -142,9 +143,9 @@ init_causal_candidates_coef <- function(data, singletrait, formula,
 #' @param singletrait  a logical indicator determining if the model is for
 #'  multi_trait or single-trait fine-mapping
 #' @param ncausal_mixt the number of mixtures used in the causal models
-#' @return a list of length `ncausal_mixt` with a vector of one causal candida-
-#'  te per ld group (if `singletrait = TRUE`) or per combination of ld_group
-#'  and trait if (`singletrait = FALSE`)
+#' @return a list of length `ncausal_mixt` with a vector of one causal
+#'  candidate per LD group (if `singletrait = TRUE`) or per combination of
+#'  ld_group and trait if (`singletrait = FALSE`)
 #' @importFrom rlang syms set_names
 #' @importFrom dplyr group_by sample_n
 #' @importFrom purrr map map2
