@@ -159,6 +159,9 @@ norm2_wrap <- function(...) {
 
   vec <- list(...)
   vec <- unlist(vec)
+  if (!is.numeric(vec)) {
+    stop("the input is not numeric")
+  }
   norm(matrix(vec), "F")
 
 }
@@ -168,6 +171,7 @@ norm2_wrap <- function(...) {
 #' @param lm_model an `lm` object
 #' @return the std. error of `lm_model`
 lm_std_err <- function(lm_model) {
+
   coef(summary(lm_model))[, "Std. Error"]
 }
 
@@ -175,4 +179,14 @@ lm_std_err <- function(lm_model) {
 #'
 #' @param x a vector of losses between current and previous iterations
 #' @return the philips stopping criteria
-philips <- function(x) sqrt(sum(x) / (1 + max(x)))
+philips <- function(x) {
+
+  if (is.logical(x)) {
+    x <- as.numeric(x)
+  }
+  if (!is.numeric(x)) {
+    stop("`x` vector is not numeric")
+  }
+  sqrt(sum(x^2) / (1 + max(x)))
+
+}
