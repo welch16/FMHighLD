@@ -51,7 +51,7 @@ build_design_matrix <- function(data, beta) {
 #' @importFrom flexmix predict
 select_causals_single <- function(data, model, fm_param, group, annot_names) {
 
-  if (class(model) == "flexmix") {
+  if (is(model, "flexmix")) {
     fitted <- flexmix::predict(model, newdata = data)
     # we applied `flexmix::relabel`, so in the first column we get the right
     # slope in the model

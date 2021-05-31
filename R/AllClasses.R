@@ -145,8 +145,9 @@ setValidity("FMIter",
     if (length(object@models) == 0) {
       out <- TRUE
     } else {
-      out <- all(purrr::map_chr(object@models, class) == "lm") |
-        all(purrr::map_chr(object@models, class) == "lmerMod")
+      out <- all(purrr::map_lgl(object@models, is, "lm")) |
+        all(purrr::map_lgl(object@models, is, "lmerMod")) |
+        all(purrr::map_lgl(object@models, is, "flexmix"))
       out <- out & object@nassoc == nrow(gamma)
     }
     out

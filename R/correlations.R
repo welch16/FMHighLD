@@ -260,7 +260,7 @@ get_ld_clusters <- function(ld_matrix, min_r2, snps = NULL, max_dist = Inf,
 
   if (!is.null(snps)) {
 
-    if (class(snps) %in% c("IRanges", "GRanges")) {
+    if (is(snps, "IRanges") | is(snps, "GRanges")) {
       position_dist <- S4Vectors::start(snps)
       position_dist <- as.matrix(stats::dist(position_dist,
         method = "manhattan"))

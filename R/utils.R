@@ -112,7 +112,7 @@ rownames(out)[1]
 #' @importFrom stats terms
 has_intercept <- function(formula) {
 
-  stopifnot(class(formula) == "formula")
+  stopifnot(is(formula, "formula"))
 
   attr(stats::terms(formula), "intercept") == 1
 

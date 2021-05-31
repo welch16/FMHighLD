@@ -46,5 +46,5 @@ Suggests:
     IRanges,
     GenomicRanges,
     magrittr
-VignetteBuilder: rmarkdown
+VignetteBuilder: knitr
 Language: en-US
