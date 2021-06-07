@@ -9,6 +9,8 @@
 \alias{max_iter}
 \alias{min_tol}
 \alias{annot_tol}
+\alias{show,FMParam-method}
+\alias{show}
 \alias{strategy,FMParam-method}
 \alias{params_all,FMParam-method}
 \alias{params_pickm,FMParam-method}
@@ -31,6 +33,8 @@ max_iter(object)
 min_tol(object)
 
 annot_tol(object)
+
+\S4method{show}{FMParam}(object)
 
 \S4method{strategy}{FMParam}(object)
 

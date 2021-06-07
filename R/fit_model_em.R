@@ -236,6 +236,7 @@ flexmix_fit <- function(formula, data, causal_candidates,
 #' @param sigma0 the error variance estimate of the background model
 #' @param fm_param configuration parameter used to pick the causal candidate
 #'  per group
+#' @param ncausal_mixt the number of mixtures used in the causal models
 #' @param verbose a logical indicator of adding process messages
 #' @return a list with the updated parameters in one EM iteration
 #' @importFrom methods new

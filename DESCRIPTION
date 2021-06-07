@@ -36,11 +36,12 @@ Imports:
     igraph,
     tibble,
     S4Vectors,
-    flexmix
+    flexmix,
+    sessioninfo,
+    BiocStyle
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,
-    BiocStyle,
     rmarkdown,
     testthat,
     IRanges,

@@ -32,6 +32,8 @@ FMHighLD algorithm}
 \item{fm_param}{configuration parameter used to pick the causal candidate
 per group}
 
+\item{ncausal_mixt}{the number of mixtures used in the causal models}
+
 \item{verbose}{a logical indicator of adding process messages}
 }
 \value{

@@ -1,6 +1,8 @@
 ---
 title: "Using FMHighLD"
-author: "Rene Welch, Kwangmoon Park and Sunduz Keles"
+author: |
+        | Rene Welch, Kwangmoon Park and S&#252;nd&#252;z Kele&#351;
+        | Department of Biostatistics and Medical Informatics and Department of Statistics, University of Wisconsin-Madison
 package: FMHighLD
 output: 
   BiocStyle::html_document
@@ -10,7 +12,26 @@ vignette: >
   %\VignetteEncoding{UTF-8}  
 ---
 
-this is a test
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+
+
+# Overview
+
+In this vignette, we provide a brief overview of the `r Biocpkg("FMHighLD")` package. This package provides a fine-mapping methods for SNPs in high LD by integrating summary statistics with annotation data. To install the package we use: 
+
+```{r install, include = TRUE, echo = TRUE, eval = FALSE}
+BiocManager::install("FMHighLD") # not currently available
+remotes::install_github("welch16/FMHighLD", ref = "devel")
+```
+
+and to load the package, we use:
+
+```{r use, include = TRUE, echo = TRUE, eval = FALSE}
+library(FMHighLD)
+```
+
+## Simulation example
+
 
 ```{r example, include = FALSE, eval = FALSE}
 
@@ -18,11 +39,10 @@ library(magrittr)
 library(tidyverse)
 library(devtools)
 library(flexmix)
-load_all()
 
 set.seed(12345)
 nsnps <- 2000
-nldblocks <- 200
+nldblocks <- 400
 snp_names <- stringr::str_c("snp", seq_len(nsnps))
 
 ld_mat <- sim_block_cor(
@@ -67,21 +87,6 @@ true_model <- lm(z ~ 0 + skew, data = as.data.frame(true_data) %>%
 true_data %<>%
   dplyr::mutate(res = residuals(true_model)[true_data$snp]^2)
 
-# select_causals_single(snp_data, true_model, FMParam(max_iter = 20),
-#   "ld_cluster", "skew") %>%
-#   dplyr::inner_join(
-#     true_data, by = "ld_cluster")
-
-# true_model
-
-# fmld_fit <- fmhighld_fit(
-#   response, skew_mat, ld_clusters,
-#   singletrait = TRUE, ncausal_mixt = 1,
-#   formula = response ~ 0 + annot,
-#   # init_coef_mean = true_model$coefficients,
-#   skip_causal = FALSE, fm_param = FMParam(strategy = "none",
-#     min_tol = 1e-3, max_iter = 100, annot_tol = 1e-2),
-#   save_iter = FALSE, verbose = FALSE)
 
 load_all()
 fmld_fit <- fmhighld_fit_em(
@@ -90,7 +95,7 @@ fmld_fit <- fmhighld_fit_em(
   formula = response ~ 1 + annot,
   # init_coef_mean = true_model$coefficients,
   skip_causal = FALSE, fm_param = FMParam(strategy = "none",
-    min_tol = 1e-3, max_iter = 50, annot_tol = 1e-2),
+    min_tol = 1e-3, max_iter = 1e3, annot_tol = 1e-2),
   save_iter = FALSE, verbose = TRUE)
 
 tibble::tibble(id = seq_along(fmld_fit$loglike),
@@ -98,10 +103,11 @@ tibble::tibble(id = seq_along(fmld_fit$loglike),
   ggplot(aes(id, loglike)) + geom_line()
 
 
-
 fmld_fit$all_models[[which.max(fmld_fit$loglike)]] %>%
   flexmix::relabel() %>%
   flexmix::parameters() -> pps
+
+
 
 true_data
 
@@ -179,7 +185,8 @@ pps <- parameters(flexfit)
 
 snp_data %>%
   dplyr::mutate(cl = flexmix::clusters(fit_model)) %>%
-  dplyr::select(causal, cl) %>% table()
+  dplyr::select(causal, cl) %>%
+  table()
 
 
 ```
@@ -262,4 +269,11 @@ tibble(ss) %>%
 # are valuable as a proxy of the true causals
 
 
+```
+
+
+# SessionInfo
+
+```{r info,include=TRUE,echo =TRUE,eval=TRUE}
+sessioninfo::session_info("FMHighLD")
 ```

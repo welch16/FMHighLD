@@ -1,3 +1,25 @@
+#' @rdname FMParam-methods
+#' @aliases show
+#' @docType methods
+setMethod("show",
+  signature = signature(object = "FMParam"),
+  definition = function(object) {
+  if (strategy(object) == "none") {
+    message("FMHighLD setup:")
+  } else if (strategy(object) == "all") {
+    pp <- params_all(object)
+    message("FMHighLD setup picking ", pp$k, " smallest residual with prob. ",
+      pp$prob, " in every LD cluster")
+  } else {
+    pp <- params_pickm(object)
+    message("FMHighLD setup picking ", pp$k, " smallest residual with prob. ",
+      pp$prob, " in ", pp$m, " LD cluster by ", pp$msel)
+  }
+  message("  Error bound: ", error_bound(object))
+  message("  Max. iter: ", max_iter(object))
+  message("  Min. tol: ", min_tol(object))
+})
+
 
 #' @rdname FMParam-methods
 #' @aliases strategy
