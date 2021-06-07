@@ -80,8 +80,10 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
   continue <- TRUE
   current_iter <- init
   like_vec <- rep(NA, max_iter)
+  full_like_vec <- rep(NA, max_iter)
+  aux_df <- as.data.frame(fmld_data)
   all_models <- vector(mode = "list", length = max_iter)
-  
+
   while (continue) {
     # browser()
     iter <- iter + 1
@@ -138,8 +140,11 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
       current_iter <- prev_iter
     }
     like_vec[iter] <- curr_like
-    all_models[iter] <- models(current_iter)[[1]]
+    full_like_vec[iter] <- purrr::map_dbl(models(current_iter),
+      flexmix::logLik, newdata = aux_df)
 
+    all_models[iter] <- models(current_iter)[[1]]
+  
     # tibble::tibble(like = like_vec, id = seq_along(like_vec)) %>%
     #   ggplot(aes(id, like_vec)) +
     #     geom_line()
@@ -160,7 +165,8 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
 
   }
 
-  list(all_models = all_models, loglike = like_vec, final = current_iter)
+  list(all_models = all_models, loglike = like_vec,
+    full_loglike = full_like_vec, final = current_iter)
 }
 
 
