@@ -39,10 +39,18 @@ library(magrittr)
 library(tidyverse)
 library(devtools)
 library(flexmix)
+library(cowplot)
+
+theme_set(cowplot::theme_minimal_grid())
+
+load_all()
 
 set.seed(12345)
 nsnps <- 2000
-nldblocks <- 400
+nldblocks <- 100
+
+nsnps / nldblocks
+
 snp_names <- stringr::str_c("snp", seq_len(nsnps))
 
 ld_mat <- sim_block_cor(
@@ -81,29 +89,47 @@ true_data <- snp_data %>%
   dplyr::filter(causal == 1) %>%
   dplyr::select((-causal))
 
-true_model <- lm(z ~ 0 + skew, data = as.data.frame(true_data) %>%
+true_model <- lm(z ~ 1 + skew, data = as.data.frame(true_data) %>%
   tibble::column_to_rownames("snp"))
+summary(true_model)
+
 
 true_data %<>%
   dplyr::mutate(res = residuals(true_model)[true_data$snp]^2)
 
-
-load_all()
 fmld_fit <- fmhighld_fit_em(
   response, skew_mat, ld_clusters,
   singletrait = TRUE,
   formula = response ~ 1 + annot,
   # init_coef_mean = true_model$coefficients,
-  skip_causal = FALSE, fm_param = FMParam(strategy = "none",
-    min_tol = 1e-3, max_iter = 1e3, annot_tol = 1e-2),
+  skip_causal = FALSE, fm_param = FMParam(strategy = "all",
+    prob = .95,
+    min_tol = 1e-3, max_iter = 1000, annot_tol = 1e-2),
   save_iter = FALSE, verbose = TRUE)
 
-tibble::tibble(id = seq_along(fmld_fit$loglike),
-  loglike = fmld_fit$loglike) %>%
-  ggplot(aes(id, loglike)) + geom_line()
+tt <- tibble::tibble(id = seq_along(fmld_fit$loglike),
+  loglike = fmld_fit$loglike,
+  full = fmld_fit$full_loglike) %>%
+  mutate(ratio = loglike / full)
+
+cowplot::plot_grid(
+    tt %>%
+      ggplot(aes(id, loglike)) + geom_line(),
+    tt %>%
+      ggplot(aes(id, full)) + geom_line(),
+    tt %>%
+      ggplot(aes(id, ratio)) + geom_line(), ncol = 1)
 
 
-fmld_fit$all_models[[which.max(fmld_fit$loglike)]] %>%
+fmld_fit$all_models[[which.max(tt$loglike)]] %>%
+  flexmix::relabel() %>%
+  flexmix::parameters()
+
+fmld_fit$all_models[[which.max(tt$full)]] %>%
+  flexmix::relabel() %>%
+  flexmix::parameters()
+
+fmld_fit$all_models[[which.max(tt$ratio)]] %>%
   flexmix::relabel() %>%
   flexmix::parameters() -> pps
 
@@ -127,30 +153,30 @@ true_data %>%
 
   
 
-tt <- replicate(500, {
+# tt <- replicate(500, {
 
-  fmodel1 <- flexmix::FLXMRglm(~ skew, family = "gaussian")
-  fmodel2 <- flexmix::FLXMRglm(family = "gaussian")
-  # fmodel3 <- flexmix::FLXMRglm(~ 0 + skew, family = "gaussian")
+#   fmodel1 <- flexmix::FLXMRglm(~ skew, family = "gaussian")
+#   fmodel2 <- flexmix::FLXMRglm(family = "gaussian")
+#   # fmodel3 <- flexmix::FLXMRglm(~ 0 + skew, family = "gaussian")
 
-  data <- snp_data %>%
-    group_by(ld_cluster) %>%
-    sample_n(1) %>%
-    ungroup()
+#   data <- snp_data %>%
+#     group_by(ld_cluster) %>%
+#     sample_n(1) %>%
+#     ungroup()
 
-  flexfit <- flexmix(z ~ 1, k = 2, data = data,
-    model = list(fmodel1, fmodel2))
+#   flexfit <- flexmix(z ~ 1, k = 2, data = data,
+#     model = list(fmodel1, fmodel2))
 
-})
+# })
 
-tt  %>%
-  map(relabel) %>%
-  map(parameters) %>%
-  map(1) %>%
-  map_dbl(~.[2,1]) %>%
-  tibble(x = .) %>%
-  ggplot(aes(x))+ geom_histogram(bins = 21) +
-  geom_vline(xintercept = 1, linetype = 2, colour = "red")
+# tt  %>%
+#   map(relabel) %>%
+#   map(parameters) %>%
+#   map(1) %>%
+#   map_dbl(~.[2,1]) %>%
+#   tibble(x = .) %>%
+#   ggplot(aes(x))+ geom_histogram(bins = 21) +
+#   geom_vline(xintercept = 1, linetype = 2, colour = "red")
 
 # algorithm 
 # 0. take seed
@@ -195,6 +221,9 @@ snp_data %>%
 
 ```{r skew-vs-z, include = FALSE, echo = FALSE, eval = FALSE}
 
+true_param <- coef(summary(true_model))[, "Estimate"]
+
+
 snp_data %>%
   ggplot(aes(skew, z, colour = factor(causal))) +
   geom_point() +
@@ -206,12 +235,12 @@ snp_data %>%
   geom_vline(xintercept = 0, linetype = 2) +
   # geom_smooth(method = "lm", formula = y ~ 0 + x, se = FALSE,
   #   show.legend = FALSE) +
-  geom_smooth(method = "lm", formula = y ~ 0 + x, se = FALSE,
+  geom_smooth(method = "lm", formula = y ~ 1 + x, se = FALSE,
     aes(group = 1), colour = "red") +
+  geom_abline(slope = true_param[2], intercept = true_param[1],
+    colour = "darkgreen") +
   geom_abline(slope = pps[[1]][2, 1], intercept = pps[[1]][1, 1],
-    colour = "magenta") +
-  geom_abline(slope = 0, intercept = pps[[2]][1, 1], colour = "darkgreen",
-    linetype = 2)
+    colour = "magenta")
     
 ```
 
