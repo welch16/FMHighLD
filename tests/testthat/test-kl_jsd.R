@@ -29,9 +29,27 @@ test_that("kl works when an entry is zero", {
   p1[5] <- 0
   p2 <- rep(1, length(p1))
 
-  # this test was motivated by the problem that is.na(sum(p1 * log(p1))) is TRUE
+  # this test was motivated by the issue that is.na(sum(p1 * log(p1))) is TRUE
 
   expect_true(! is.na(kl(p1, p2)))
+
+})
+
+test_that("kl error when length <= 1", {
+
+  expect_error(kl(0, 1))
+
+})
+
+test_that("kl error when the vectors are of diff length", {
+
+  expect_error(kl(rnorm(3), rnorm(2)))
+
+})
+
+test_that("kl works when empty", {
+
+  expect_equal(kl(rep(0, 2), rep(1, 2)), 0)
 
 })
 

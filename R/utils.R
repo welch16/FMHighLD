@@ -13,14 +13,20 @@
 #' v1 <- v1 / sum(v1)
 #' kl(u1, v1)
 kl <- function(p1, p2) {
-  p1 <- p1 / sum(p1)
-  p2 <- p2 / sum(p2)
+  stopifnot(length(p1) > 1, length(p1) == length(p2))
   if (any(p1 == 0)) {
     idx <- p1 != 0
     p1 <- p1[idx]
     p2 <- p2[idx]
   }
-  sum(p1 * (log(p1) - log(p2)))
+  if (length(p1) == 0) {
+    out <- 0
+  } else {
+    p1 <- p1 / sum(p1)
+    p2 <- p2 / sum(p2)
+    out <- sum(p1 * (log(p1) - log(p2)))
+  }
+  out
 }
 
 #' Computes the Jensen-Shannon (JS) divergence between two discrete
