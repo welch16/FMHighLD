@@ -56,7 +56,7 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
   ## init data structure
   fmld_data <- build_fm_tibble(response, annot_matrix, ld_clusters, singletrait)
 
-  # init algorithm parameteres
+  # init algorithm parameters
   iter <- 0
   error_bound <- error_bound(fm_param)
   max_iter <- max_iter(fm_param)
