@@ -60,6 +60,45 @@ test_that("sim_toeplitz_cor error when block_sizes and corrs have diff sizes", {
 
 })
 
+test_that("sim_block_cor works", {
+
+  block_sizes <- c(1, 2, 3)
+  corrs <- c(.3, .5, .7)
+  mat <- sim_block_cor(block_sizes, corrs)
+  expect_true(ncol(mat) == nrow(mat))
+  expect_true(nrow(mat) == sum(block_sizes))
+  expect_true(is(mat, "matrix"))
+
+})
+
+test_that("sim_toeplitz_cor works", {
+
+  block_sizes <- c(4, 2, 3)
+  corrs <- c(.6, .5, .7)
+  mat <- sim_toeplitz_cor(block_sizes, corrs)
+  expect_true(ncol(mat) == nrow(mat))
+  expect_true(nrow(mat) == sum(block_sizes))
+  expect_true(is(mat, "matrix"))
+
+})
+
+test_that("sim_hub_cor works", {
+
+  rho_hub <- c(.9, .7)
+  tau_hub <- c((.9 - .7) / (10 - 2), (.7 - .6) / (5-2))
+  eps_hub <- min(1 - (rho_hub) - 0.75 * (tau_hub)) - .01
+  block_sizes <- c(10, 5)
+  mat <- sim_hub_cor(block_sizes = block_sizes,
+    max_corrs = rho_hub, min_corrs = c(.7, .6),
+    power = 1, epsilon = eps_hub, eidim = 2)
+  expect_true(ncol(mat) == nrow(mat))
+  expect_true(nrow(mat) == sum(block_sizes))
+  expect_true(is(mat, "matrix"))
+
+})
+
+
+
 test_that("get_ld_clusters works", {
 
   set.seed(12345)
@@ -133,3 +172,42 @@ test_that("get_ld_clusters tidy works", {
     tibble::tibble(snp = names(out), ld_cluster = out))
 
 })
+
+test_that("get_ld_clusters works without rownames or colnames", {
+
+  set.seed(12345)
+  nsnps <- 20
+  nldblocks <- 4
+
+  snp_names <- stringr::str_c("snp", seq_len(nsnps))
+
+  ld_mat <- sim_block_cor(
+    block_sizes = rep(nsnps / nldblocks, nldblocks),
+    corrs = rep(.8, nldblocks),
+    delta = .2,
+    epsilon = .1,
+    eidim = 2)
+
+  rownames(ld_mat) <- snp_names
+  expect_equal(length(table(get_ld_clusters(ld_matrix = ld_mat, 0.7))),
+    nldblocks)
+  expect_true(all(
+    table(get_ld_clusters(ld_matrix = ld_mat, 0.7)) == nsnps / nldblocks))
+
+  ld_mat <- sim_block_cor(
+    block_sizes = rep(nsnps / nldblocks, nldblocks),
+    corrs = rep(.8, nldblocks),
+    delta = .2,
+    epsilon = .1,
+    eidim = 2)
+
+  colnames(ld_mat) <- snp_names
+  expect_equal(length(table(get_ld_clusters(ld_matrix = ld_mat, 0.7))),
+    nldblocks)
+  expect_true(all(
+    table(get_ld_clusters(ld_matrix = ld_mat, 0.7)) == nsnps / nldblocks))
+
+
+
+})
+
