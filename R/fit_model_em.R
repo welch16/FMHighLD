@@ -104,13 +104,6 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
       causal_list <- purrr::map(model_list,
         ~ select_causals_single(fmld_data, .x, fm_param, "ld_cluster",
           annot_names))
-      # causal_wide <- causal_list %>%
-      #   purrr::map2(
-      #     stringr::str_c("which_snp", seq_len(ncausal_mixt), sep = "_"),
-      #       ~ rlang::set_names(.x, c("ld_cluster", .y))) %>%
-      #   purrr::reduce(purrr::partial(dplyr::inner_join, by = "ld_cluster"))
-      # print(dplyr::pull(causal_wide, which_snp_1))
-
     } else {
       browser()
       debugonce(select_causals_multi)

@@ -19,6 +19,9 @@
 #' @importFrom Matrix crossprod
 noise_cor <- function(corr_matrix, epsilon = .01, eidim = 2) {
 
+  stopifnot(is(corr_matrix, "matrix") | is(corr_matrix, "Matrix"))
+  stopifnot(epsilon > 0, is.numeric(eidim))
+
   ndim <- nrow(corr_matrix)
   diag(corr_matrix) <- 1 - epsilon
 
