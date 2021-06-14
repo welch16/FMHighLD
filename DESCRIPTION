@@ -46,6 +46,7 @@ Suggests:
     testthat,
     IRanges,
     GenomicRanges,
-    magrittr
+    magrittr,
+    corrplot
 VignetteBuilder: knitr
 Language: en-US

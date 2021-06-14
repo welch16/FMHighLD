@@ -23,6 +23,18 @@ test_that("jsd gets zero for same vector", {
 
 })
 
+test_that("kl works when an entry is zero", {
+
+  p1 <- 1:10
+  p1[5] <- 0
+  p2 <- rep(1, length(p1))
+
+  # this test was motivated by the problem that is.na(sum(p1 * log(p1))) is TRUE
+
+  expect_true(! is.na(kl(p1, p2)))
+
+})
+
 test_that("jsd works for two vectors", {
 
   p1 <- 1:5

@@ -85,7 +85,6 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
   all_models <- vector(mode = "list", length = max_iter)
 
   while (continue) {
-    # browser()
     iter <- iter + 1
     prev_iter <- current_iter
     model_list <- models(prev_iter)
@@ -151,6 +150,7 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
       print(stringr::str_c("loglikeli: ", curr_like))
     }
 
+    # browser()
     continue <- iter < max_iter & pl >= min_tol
 
     # we have causal candidates already, now we need to apply the rest of the

@@ -15,6 +15,11 @@
 kl <- function(p1, p2) {
   p1 <- p1 / sum(p1)
   p2 <- p2 / sum(p2)
+  if (any(p1 == 0)) {
+    idx <- p1 != 0
+    p1 <- p1[idx]
+    p2 <- p2[idx]
+  }
   sum(p1 * (log(p1) - log(p2)))
 }
 

@@ -108,3 +108,28 @@ test_that("get_ld_clusters error when min_r2 is not correlation", {
   expect_error(get_ld_clusters(ld_mat, min_r2 = 3))
   expect_error(get_ld_clusters(ld_mat, min_r2 = -1))
 })
+
+test_that("get_ld_clusters tidy works", {
+
+  set.seed(12345)
+  nsnps <- 20
+  nldblocks <- 4
+
+  nsnps / nldblocks
+
+  snp_names <- stringr::str_c("snp", seq_len(nsnps))
+
+  ld_mat <- sim_block_cor(
+    block_sizes = rep(nsnps / nldblocks, nldblocks),
+    corrs = rep(.8, nldblocks),
+    delta = .2,
+    epsilon = .1,
+    eidim = 2)
+
+  rownames(ld_mat) <- colnames(ld_mat) <- snp_names
+  out <- get_ld_clusters(ld_mat, .7, tidy = FALSE)
+  expect_true(is(get_ld_clusters(ld_mat, .7, tidy = TRUE), "data.frame"))
+  expect_equal(get_ld_clusters(ld_mat, .7, tidy = TRUE),
+    tibble::tibble(snp = names(out), ld_cluster = out))
+
+})

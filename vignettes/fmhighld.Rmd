@@ -4,13 +4,16 @@ author: |
         | Rene Welch, Kwangmoon Park and S&#252;nd&#252;z Kele&#351;
         | Department of Biostatistics and Medical Informatics and Department of Statistics, University of Wisconsin-Madison
 package: FMHighLD
-output: 
-  BiocStyle::html_document
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{Using FMHighLD}
-  %\VignetteEngine{rmarkdown::render}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}  
 ---
+
 
 <meta http-equiv="content-type" content="text/html;charset=utf-8" />
 
@@ -30,24 +33,32 @@ and to load the package, we use:
 library(FMHighLD)
 ```
 
-## Simulation example
 
+```{r setup, include = FALSE, echo = FALSE, eval = TRUE}
 
-```{r example, include = FALSE, eval = FALSE}
+knitr::opts_chunk$set(include = TRUE, echo = FALSE, eval = TRUE,
+  warning = FALSE)
 
 library(magrittr)
 library(tidyverse)
 library(devtools)
 library(flexmix)
 library(cowplot)
+devtools::load_all()
 
 theme_set(cowplot::theme_minimal_grid())
 
-load_all()
+```
+
+# Simulation example
+
+We included in the package the simulation methods from Hardin et. al., 2012 _"A method for generating realistic correlation matrices"_. We can utilize these methods to benchmark the `FMHighLD` algorithm.
+
+```{r example, include = FALSE, eval = FALSE}
 
 set.seed(12345)
 nsnps <- 2000
-nldblocks <- 100
+nldblocks <- 200
 
 nsnps / nldblocks
 
@@ -59,6 +70,10 @@ ld_mat <- sim_block_cor(
   delta = .2,
   epsilon = .1,
   eidim = 2)
+
+# corrplot::corrplot(ld_mat, tl.pos = "n")
+
+
 
 rownames(ld_mat) <- colnames(ld_mat) <- snp_names
 
@@ -80,9 +95,10 @@ snp_data <- tibble::tibble(
     causal = if_else(snp %in% causals, 1, 0),
     skew) %>%
   dplyr::mutate(
-    z = rnorm(nsnps, if_else(causal == 1, 0 +  1 * skew, 0.0), sd = .5))
+    z = rnorm(nsnps, if_else(causal == 1, 0 +  3 * skew, 0.0), sd = .5))
 
 response <- snp_data$z
+
 names(response) <- snp_names
 
 true_data <- snp_data %>%
@@ -93,18 +109,19 @@ true_model <- lm(z ~ 1 + skew, data = as.data.frame(true_data) %>%
   tibble::column_to_rownames("snp"))
 summary(true_model)
 
-
 true_data %<>%
   dplyr::mutate(res = residuals(true_model)[true_data$snp]^2)
 
+load_all()
 fmld_fit <- fmhighld_fit_em(
   response, skew_mat, ld_clusters,
   singletrait = TRUE,
   formula = response ~ 1 + annot,
   # init_coef_mean = true_model$coefficients,
-  skip_causal = FALSE, fm_param = FMParam(strategy = "all",
+  skip_causal = FALSE,
+  fm_param = FMParam(strategy = "all",
     prob = .95,
-    min_tol = 1e-3, max_iter = 1000, annot_tol = 1e-2),
+    min_tol = 1e-3, max_iter = 200, annot_tol = 1e-2),
   save_iter = FALSE, verbose = TRUE)
 
 tt <- tibble::tibble(id = seq_along(fmld_fit$loglike),
@@ -135,19 +152,19 @@ fmld_fit$all_models[[which.max(tt$ratio)]] %>%
 
 
 
-true_data
+# true_data
 
-causal_tibble <- function(fit) {
+# causal_tibble <- function(fit) {
 
-  tibble::tibble(
-    ld_cluster = names(fit@causal_candidates[[1]]),
-    snp_causal = fit@causal_candidates[[1]])
+#   tibble::tibble(
+#     ld_cluster = names(fit@causal_candidates[[1]]),
+#     snp_causal = fit@causal_candidates[[1]])
 
-}
+# }
 
-true_data %>%
-  inner_join(causal_tibble(fmld_fit)) %>%
-  dplyr::filter(snp != snp_causal)
+# true_data %>%
+#   inner_join(causal_tibble(fmld_fit)) %>%
+#   dplyr::filter(snp != snp_causal)
   
 
 

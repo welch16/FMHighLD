@@ -63,6 +63,7 @@ select_causals_single <- function(data, model, fm_param, group, annot_names) {
     design_matrix <- build_design_matrix(data, beta)
     fitted <- as.numeric(design_matrix %*% beta)
     residuals <- data[[response]] - fitted
+    # why not residuals <- stats::residuals(model, newdata = data) ?
   }
 
   causal_rule(data, residuals, fm_param, group, annot_names)
