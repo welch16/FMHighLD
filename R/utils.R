@@ -14,12 +14,18 @@
 #' kl(u1, v1)
 kl <- function(p1, p2) {
   stopifnot(length(p1) > 1, length(p1) == length(p2))
-  if (any(p1 == 0)) {
-    idx <- p1 != 0
+
+  if (any(p1 <= 1e-12)) {
+    idx <- p1 > 1e-12
     p1 <- p1[idx]
     p2 <- p2[idx]
   }
-  if (length(p1) == 0) {
+  if (any(p2 <= 1e-12)) {
+    idx <- p2 > 1e-12
+    p1 <- p1[idx]
+    p2 <- p2[idx]
+  }
+  if (length(p1) == 0 | length(p2) == 0) {
     out <- 0
   } else {
     p1 <- p1 / sum(p1)
@@ -45,7 +51,7 @@ kl <- function(p1, p2) {
 #' jsd(u1, v1)
 jsd <- function(p1, p2) {
   m <- 0.5 * (p1 + p2)
-  0.5 * kl(p1, m) + 0.5 * kl(p2, m)
+  p1 <- 0.5 * kl(p1, m) + 0.5 * kl(p2, m)
 }
 
 

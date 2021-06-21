@@ -22,7 +22,7 @@ vignette: >
 
 In this vignette, we provide a brief overview of the `r Biocpkg("FMHighLD")` package. This package provides a fine-mapping methods for SNPs in high LD by integrating summary statistics with annotation data. To install the package we use: 
 
-```{r install, include = TRUE, echo = TRUE, eval = FALSE}
+```{r how-to-install, include = TRUE, echo = FALSE, eval = FALSE}
 BiocManager::install("FMHighLD") # not currently available
 remotes::install_github("welch16/FMHighLD", ref = "devel")
 ```
@@ -34,7 +34,7 @@ library(FMHighLD)
 ```
 
 
-```{r setup, include = FALSE, echo = FALSE, eval = TRUE}
+```{r setup, include = FALSE, echo = FALSE, eval = FALSE}
 
 knitr::opts_chunk$set(include = TRUE, echo = FALSE, eval = TRUE,
   warning = FALSE)
@@ -44,7 +44,7 @@ library(tidyverse)
 library(devtools)
 library(flexmix)
 library(cowplot)
-devtools::load_all()
+devtools::load_all() ## remove later
 
 theme_set(cowplot::theme_minimal_grid())
 
@@ -72,8 +72,6 @@ ld_mat <- sim_block_cor(
   eidim = 2)
 
 # corrplot::corrplot(ld_mat, tl.pos = "n")
-
-
 
 rownames(ld_mat) <- colnames(ld_mat) <- snp_names
 
@@ -112,7 +110,7 @@ summary(true_model)
 true_data %<>%
   dplyr::mutate(res = residuals(true_model)[true_data$snp]^2)
 
-load_all()
+
 fmld_fit <- fmhighld_fit_em(
   response, skew_mat, ld_clusters,
   singletrait = TRUE,
@@ -121,26 +119,30 @@ fmld_fit <- fmhighld_fit_em(
   skip_causal = FALSE,
   fm_param = FMParam(strategy = "all",
     prob = .95,
-    min_tol = 1e-3, max_iter = 200, annot_tol = 1e-2),
+    min_tol = 1e-3, max_iter = 1000, annot_tol = 1e-2),
   save_iter = FALSE, verbose = TRUE)
 
 tt <- tibble::tibble(id = seq_along(fmld_fit$loglike),
   loglike = fmld_fit$loglike,
   full = fmld_fit$full_loglike) %>%
-  mutate(ratio = loglike / full)
+  mutate(ratio = loglike / full, diff = loglike - full)
 
 cowplot::plot_grid(
     tt %>%
-      ggplot(aes(id, loglike)) + geom_line(),
+      ggplot(aes(id, loglike)) + geom_line() +
+        theme(axis.title.x = element_blank()),
     tt %>%
-      ggplot(aes(id, full)) + geom_line(),
-    tt %>%
-      ggplot(aes(id, ratio)) + geom_line(), ncol = 1)
+      ggplot(aes(id, diff)) + geom_line() +
+      theme(axis.title.x = element_blank()), ncol = 1)
 
 
 fmld_fit$all_models[[which.max(tt$loglike)]] %>%
   flexmix::relabel() %>%
   flexmix::parameters()
+
+fmld_fit$all_models[[which.max(tt$diff)]] %>%
+  flexmix::relabel() %>%
+  flexmix::parameters() -> pps
 
 fmld_fit$all_models[[which.max(tt$full)]] %>%
   flexmix::relabel() %>%
@@ -202,34 +204,34 @@ fmld_fit$all_models[[which.max(tt$ratio)]] %>%
 #     that are closest to linear model
 # 3. repeat until convergence?
 
-flexmix::predict(tt[[1]], data =newdata) %>% str()
+# flexmix::predict(tt[[1]], data =newdata) %>% str()
 
-tt %>% map(parameters) %>% pluck(3)
+# tt %>% map(parameters) %>% pluck(3)
  
-AIC(fit_model)
-BIC(fit_model)
+# AIC(fit_model)
+# BIC(fit_model)
 
-flexmix::predict(fit_model) %>% str
+# flexmix::predict(fit_model) %>% str
 
 
-fit_model %>% class
+# fit_model %>% class
 
-fit_model0 <- flexmix::initFlexmix(z ~ skew, nrep = 10, k = 2,
-  data = snp_data, model = list(fmodel1, fmodel2))
+# fit_model0 <- flexmix::initFlexmix(z ~ skew, nrep = 10, k = 2,
+#   data = snp_data, model = list(fmodel1, fmodel2))
 
-fit_model1 <- flexmix::stepFlexmix(z ~ skew, nrep = 10, k = 2,
-  data = snp_data, model = list(fmodel1, fmodel2))
+# fit_model1 <- flexmix::stepFlexmix(z ~ skew, nrep = 10, k = 2,
+#   data = snp_data, model = list(fmodel1, fmodel2))
 
-parameters(fit_model0)
-parameters(fit_model1)
+# parameters(fit_model0)
+# parameters(fit_model1)
 
-# flexmix::FLXMRglm
-pps <- parameters(flexfit)
+# # flexmix::FLXMRglm
+# pps <- parameters(flexfit)
 
-snp_data %>%
-  dplyr::mutate(cl = flexmix::clusters(fit_model)) %>%
-  dplyr::select(causal, cl) %>%
-  table()
+# snp_data %>%
+#   dplyr::mutate(cl = flexmix::clusters(fit_model)) %>%
+#   dplyr::select(causal, cl) %>%
+#   table()
 
 
 ```

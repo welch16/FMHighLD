@@ -125,6 +125,10 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
     mccl_vec <- mccl(current_iter, prev_iter)
     coef_diff <- coef_diff_em(current_iter, prev_iter, FALSE, FALSE)
     pl <- philips(c(entropy_vec, mccl_vec, coef_diff))
+    if (is.na(pl)) {
+      browser()
+      x
+    }
 
     curr_like <- purrr::map_dbl(models(current_iter), flexmix::logLik)
     prev_like <- purrr::map_dbl(models(prev_iter), flexmix::logLik)
@@ -136,7 +140,7 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
       flexmix::logLik, newdata = aux_df)
 
     all_models[iter] <- models(current_iter)[[1]]
-  
+
     # tibble::tibble(like = like_vec, id = seq_along(like_vec)) %>%
     #   ggplot(aes(id, like_vec)) +
     #     geom_line()
@@ -151,6 +155,7 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
     }
 
     # browser()
+
     continue <- iter < max_iter & pl >= min_tol
 
     # we have causal candidates already, now we need to apply the rest of the
@@ -260,6 +265,7 @@ fm_iteration_single <- function(
   new_data <- purrr::map(new_data, dplyr::left_join, data,
     by = c(which_snp = "snp"))
   model_list <- purrr::map(model_list, flexmix::relabel)
+
   predictions <- purrr::map2(model_list, new_data, flexmix::predict)
   predictions <- predictions[[1]]
   params <- flexmix::parameters(model_list[[1]])

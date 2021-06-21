@@ -32,7 +32,7 @@ test_that("kl works when an entry is zero", {
   # this test was motivated by the issue that is.na(sum(p1 * log(p1))) is TRUE
 
   expect_true(! is.na(kl(p1, p2)))
-
+  expect_true(! is.na(kl(p2, p1)))
 })
 
 test_that("kl error when length <= 1", {
