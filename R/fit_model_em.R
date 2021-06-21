@@ -31,6 +31,12 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
   if (is.vector(annot_matrix)) {
     warning("will convert `annot_matrix` argument into a matrix")
     annot_matrix <- as.matrix(annot_matrix, ncol = 1)
+  } else if (is.matrix(annot_matrix)) {
+    # check if the matrix contains the intercept vector
+    int_idx <- apply(annot_matrix, 2, function(x)all(x == 1))
+    cnms <- colnames(annot_matrix)
+    annot_matrix <- as.matrix(annot_matrix[, 2], ncol = 1)
+    colnames(annot_matrix) <- cnms[!int_idx]
   }
 
   same_names <- check_variant_names(response, annot_matrix, ld_clusters)
@@ -125,10 +131,6 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
     mccl_vec <- mccl(current_iter, prev_iter)
     coef_diff <- coef_diff_em(current_iter, prev_iter, FALSE, FALSE)
     pl <- philips(c(entropy_vec, mccl_vec, coef_diff))
-    if (is.na(pl)) {
-      browser()
-      x
-    }
 
     curr_like <- purrr::map_dbl(models(current_iter), flexmix::logLik)
     prev_like <- purrr::map_dbl(models(prev_iter), flexmix::logLik)
