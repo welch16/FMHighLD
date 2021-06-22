@@ -58,46 +58,37 @@ We included in the package the simulation methods from Hardin et. al., 2012 _"A 
 
 set.seed(12345)
 nsnps <- 2000
-nldblocks <- 200
+nldblocks <- 1000
+annot_beta <- c("(Intercept)" = 0, "skew" =  3)
 
-nsnps / nldblocks
+snp_data <- simulate_FMHighLD_simple(nsnps, nldblocks, 0.2, 0.1, 2,
+  .5, .9, 4, 1^2, annot_beta, .5^2)
 
-snp_names <- stringr::str_c("snp", seq_len(nsnps))
-
-ld_mat <- sim_block_cor(
-  block_sizes = rep(nsnps / nldblocks, nldblocks),
-  corrs = rep(.8, nldblocks),
-  delta = .2,
-  epsilon = .1,
-  eidim = 2)
-
-# corrplot::corrplot(ld_mat, tl.pos = "n")
-
-rownames(ld_mat) <- colnames(ld_mat) <- snp_names
-
-skew <- sim_skew(nsnps, p = 0.5, q = .9, mean = 4, sd = 1)
-skew_mat <- as.matrix(skew, ncol = 1)
-rownames(skew_mat) <- snp_names
-colnames(skew_mat) <- "annot"
-
-ld_clusters <- get_ld_clusters(ld_matrix = ld_mat, 0.7)
-
-causals <- split(ld_clusters, ld_clusters) %>%
-  purrr::map(~ sample(., 1)) %>%
-  purrr::map_chr(names)
-
-snp_data <- tibble::tibble(
-  snp = snp_names,
-  ld_cluster = ld_clusters) %>%
-  dplyr::mutate(
-    causal = if_else(snp %in% causals, 1, 0),
-    skew) %>%
-  dplyr::mutate(
-    z = rnorm(nsnps, if_else(causal == 1, 0 +  3 * skew, 0.0), sd = .5))
+snp_names <- snp_data$snp
 
 response <- snp_data$z
-
 names(response) <- snp_names
+
+skew_mat <- build_design_matrix(snp_data, annot_beta)
+skew_mat <- as.matrix(skew_mat[, 2], ncol = 1)
+rownames(skew_mat) <- snp_names
+colnames(skew_mat) <- c("annot")
+
+ld_clusters <- snp_data$ld_cluster
+names(ld_clusters) <- snp_names
+
+fmparam <- FMParam(strategy = "all",
+    prob = .95,
+    min_tol = 1e-3, max_iter = 100, annot_tol = 1e-2)
+
+tictoc::tic()
+fmld_fit_em <- fmhighld_fit_em(
+  response, skew_mat, ld_clusters,
+  singletrait = TRUE,
+  formula = response ~ 1 + annot,
+  fm_param = fmparam,
+  save_iter = TRUE, verbose = TRUE)
+tictoc::toc()
 
 true_data <- snp_data %>%
   dplyr::filter(causal == 1) %>%
@@ -107,25 +98,22 @@ true_model <- lm(z ~ 1 + skew, data = as.data.frame(true_data) %>%
   tibble::column_to_rownames("snp"))
 summary(true_model)
 
-true_data %<>%
-  dplyr::mutate(res = residuals(true_model)[true_data$snp]^2)
 
-
-fmld_fit <- fmhighld_fit_em(
+tictoc::tic()
+fmld_fit_lm <- fmhighld_fit(
   response, skew_mat, ld_clusters,
   singletrait = TRUE,
   formula = response ~ 1 + annot,
-  # init_coef_mean = true_model$coefficients,
   skip_causal = FALSE,
-  fm_param = FMParam(strategy = "all",
-    prob = .95,
-    min_tol = 1e-3, max_iter = 1000, annot_tol = 1e-2),
+  fm_param = fmparam,
   save_iter = FALSE, verbose = TRUE)
+tictoc::toc()
 
-tt <- tibble::tibble(id = seq_along(fmld_fit$loglike),
-  loglike = fmld_fit$loglike,
-  full = fmld_fit$full_loglike) %>%
+tt <- tibble::tibble(id = seq_along(fmld_fit_em$loglike),
+  loglike = fmld_fit_em$loglike,
+  full = fmld_fit_em$full_loglike) %>%
   mutate(ratio = loglike / full, diff = loglike - full)
+
 
 cowplot::plot_grid(
     tt %>%
@@ -136,21 +124,10 @@ cowplot::plot_grid(
       theme(axis.title.x = element_blank()), ncol = 1)
 
 
-fmld_fit$all_models[[which.max(tt$loglike)]] %>%
-  flexmix::relabel() %>%
-  flexmix::parameters()
-
-fmld_fit$all_models[[which.max(tt$diff)]] %>%
+fmld_fit_em$all_models[[which.max(tt$diff)]] %>%
   flexmix::relabel() %>%
   flexmix::parameters() -> pps
 
-fmld_fit$all_models[[which.max(tt$full)]] %>%
-  flexmix::relabel() %>%
-  flexmix::parameters()
-
-fmld_fit$all_models[[which.max(tt$ratio)]] %>%
-  flexmix::relabel() %>%
-  flexmix::parameters() -> pps
 
 
 
@@ -239,6 +216,12 @@ fmld_fit$all_models[[which.max(tt$ratio)]] %>%
 
 
 ```{r skew-vs-z, include = FALSE, echo = FALSE, eval = FALSE}
+
+
+
+true_data %<>%
+  dplyr::mutate(res = residuals(true_model)[true_data$snp]^2)
+
 
 true_param <- coef(summary(true_model))[, "Estimate"]
 
