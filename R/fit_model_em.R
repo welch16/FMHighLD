@@ -11,8 +11,6 @@
 #'  multi_trait or single-trait fine-mapping
 #' @param formula a `formula` for the underlying linear models, by default is
 #'  `NULL`, in which case `fmhighld_fit` will create the formula.
-#' @param skip_causal a logical indicator determining whether the function will
-#'  skip the causal selection steps, and only iterate through the EM algorithm
 #' @param fm_param a `FMParam` object with the parameters used to run `FMHighLD`
 #' @param save_iter a logical indicator determining whether the iteration data
 #'  is going to be returned
@@ -22,7 +20,7 @@
 #' @export
 fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
   singletrait = TRUE, formula = NULL,
-  skip_causal = FALSE, fm_param = FMParam(), save_iter = FALSE,
+  fm_param = FMParam(), save_iter = FALSE,
   verbose = FALSE) {
 
   ncausal_mixt <- 1
@@ -85,10 +83,14 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
 
   continue <- TRUE
   current_iter <- init
-  like_vec <- rep(NA, max_iter)
-  full_like_vec <- rep(NA, max_iter)
+  if (save_iter) {
+    like_vec <- rep(NA, max_iter)
+    full_like_vec <- rep(NA, max_iter)
+    all_models <- vector(mode = "list", length = max_iter)
+  }
+
   aux_df <- as.data.frame(fmld_data)
-  all_models <- vector(mode = "list", length = max_iter)
+
 
   while (continue) {
     iter <- iter + 1
@@ -137,11 +139,12 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
     if (prev_like > curr_like) {
       current_iter <- prev_iter
     }
-    like_vec[iter] <- curr_like
-    full_like_vec[iter] <- purrr::map_dbl(models(current_iter),
-      flexmix::logLik, newdata = aux_df)
-
-    all_models[iter] <- models(current_iter)[[1]]
+    if (save_iter) {
+      like_vec[iter] <- curr_like
+      full_like_vec[iter] <- purrr::map_dbl(models(current_iter),
+        flexmix::logLik, newdata = aux_df)
+      all_models[iter] <- models(current_iter)[[1]]
+    }
 
     # tibble::tibble(like = like_vec, id = seq_along(like_vec)) %>%
     #   ggplot(aes(id, like_vec)) +
@@ -165,8 +168,13 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
 
   }
 
-  list(all_models = all_models, loglike = like_vec,
-    full_loglike = full_like_vec, final = current_iter)
+  if (save_iter) {
+    out <- list(all_models = all_models, loglike = like_vec,
+      full_loglike = full_like_vec, final = current_iter)
+  } else {
+    out <- current_iter
+  }
+  out
 }
 
 
