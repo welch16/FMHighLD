@@ -112,8 +112,6 @@ compute_mixture_prob <- function(prob_matrix) {
 #' @param init_coef_mean a coefficients vector to init the algorithm with causal
 #'  candidates selected from models with underlying coefficients sampled from a
 #'  multivariate normal with mean `init_coef_mean`
-#' @param skip_causal a logical indicator determining whether the function will
-#'  skip the causal selection steps, and only iterate through the EM algorithm
 #' @param fm_param a `FMParam` object with the parameters used to run `FMHighLD`
 #' @param save_iter a logical indicator determining whether the iteration data
 #'  is going to be returned
@@ -123,7 +121,7 @@ compute_mixture_prob <- function(prob_matrix) {
 #' @export
 fmhighld_fit <- function(response, annot_matrix, ld_clusters,
   singletrait = TRUE, ncausal_mixt = 1, formula = NULL, init_coef_mean = NULL,
-  skip_causal = FALSE, fm_param = FMParam(), save_iter = FALSE,
+  fm_param = FMParam(), save_iter = FALSE,
   verbose = FALSE) {
 
   stopifnot(is.matrix(annot_matrix) | is.vector(annot_matrix))

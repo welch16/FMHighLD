@@ -12,7 +12,6 @@ fmhighld_fit(
   ncausal_mixt = 1,
   formula = NULL,
   init_coef_mean = NULL,
-  skip_causal = FALSE,
   fm_param = FMParam(),
   save_iter = FALSE,
   verbose = FALSE
@@ -41,9 +40,6 @@ multi_trait or single-trait fine-mapping}
 \item{init_coef_mean}{a coefficients vector to init the algorithm with causal
 candidates selected from models with underlying coefficients sampled from a
 multivariate normal with mean `init_coef_mean`}
-
-\item{skip_causal}{a logical indicator determining whether the function will
-skip the causal selection steps, and only iterate through the EM algorithm}
 
 \item{fm_param}{a `FMParam` object with the parameters used to run `FMHighLD`}
 
