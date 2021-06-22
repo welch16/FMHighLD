@@ -31,7 +31,7 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
   if (is.vector(annot_matrix)) {
     warning("will convert `annot_matrix` argument into a matrix")
     annot_matrix <- as.matrix(annot_matrix, ncol = 1)
-  } else if (is.matrix(annot_matrix)) {
+  } else if (is.matrix(annot_matrix) & ncol(annot_matrix) > 1) {
     # check if the matrix contains the intercept vector
     int_idx <- apply(annot_matrix, 2, function(x)all(x == 1))
     cnms <- colnames(annot_matrix)
