@@ -75,7 +75,7 @@ simulate_FMHighLD_simple <- function(nsnps, nldblocks, ld_delta, ld_epsilon,
   snp_names <- stringr::str_c("snp", seq_len(nsnps))
 
   ld_mat <- sim_block_cor(
-    block_sizes = rep(floor(nsnps / nldblocks), nldblocks),
+    block_sizes = get_unif_block_sizes(nsnps, nldblocks),
     corrs = rep(.8, nldblocks),
     delta = ld_delta,
     epsilon = ld_epsilon,
@@ -108,4 +108,24 @@ simulate_FMHighLD_simple <- function(nsnps, nldblocks, ld_delta, ld_epsilon,
       z = rnorm(nsnps, dplyr::if_else(causal == 1,
         skew_mat %*% z_beta, 0.0), sd = sqrt(z_sigma2)))
 
+}
+
+#' Gets the LD block structure given the number of snps and number of LD
+#' clusters.
+#' @param nsnps Number of SNPs to simulate
+#' @param nldblocks Number of LD blocks to simulate
+#' @return A vector with the number of snps per ld block, if the number nsnps
+#' is not a multiple of nldblocks if will complete with the remaining number of
+#' snps
+#' @export
+#' @examples
+#' get_unif_block_sizes(50, 10)
+#' get_unif_block_sizes(50, 11)
+get_unif_block_sizes <- function(nsnps, nldblocks) {
+
+  out <- rep(floor(nsnps / nldblocks), nldblocks)
+  if (sum(out) < nsnps) {
+    out[length(out)] <- nsnps - sum(out) + out[length(out)]
+  }
+  out
 }

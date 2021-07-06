@@ -118,8 +118,15 @@ causal_rule <- function(data, residuals, fm_param, group, annot_names) {
 
   annot_sym <- rlang::syms(annot_names)
   new_data <- dplyr::rowwise(data)
+  if ("(Intercept)" %in% annot_names) {
+  new_data <- dplyr::mutate(new_data,
+    "(Intercept)" = 1,
+    aux_norm = norm2_wrap(!!! annot_sym)) %>%
+    dplyr::select(-`(Intercept)`)
+  } else {
   new_data <- dplyr::mutate(new_data,
     aux_norm = norm2_wrap(!!! annot_sym))
+  }
   new_data <- dplyr::ungroup(new_data)
   new_data <- dplyr::select(new_data, snp, tidyselect::one_of(group),
     aux_norm)

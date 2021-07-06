@@ -120,9 +120,14 @@ init_causal_candidates_coef <- function(data, singletrait, formula,
     stop(stringr::str_c("The dimension of `init_coef_mean` is not the",
       "same than the parameters suggested by the formula", sep = " "))
   }
+  if (is.null(names(init_coef_mean))) {
+    warning("`init_coef_mean` is not named, will use names from formula")
+    names(init_coef_mean) <- names(init_coef)
+  }
+
   init_models <- replicate(ncausal_mixt, {
-    init_model$coefficients <- rnorm(1, mean = init_coef_mean, sd = 1e-2)
-    names(init_model$coefficients) <- names(init_coef)
+    init_model$coefficients <- MASS::mvrnorm(1, mu = init_coef_mean,
+      Sigma = diag(rep(1e-2, length(init_coef_mean))))
     init_model
   }, simplify = FALSE)
 

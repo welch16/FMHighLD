@@ -160,12 +160,6 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
   min_tol <- min_tol(fm_param)
   annot_tol <- annot_tol(fm_param)
 
-  # if (save_iter) {
-  #   states <- list()
-  # } else {
-  #   states <- NULL
-  # }
-
   if (is.null(formula)) {
     formula <- build_formula("response", colnames(annot_matrix), TRUE)
     warning("using formula ", as.character(formula))
@@ -177,7 +171,12 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
 
   continue <- TRUE
   current_iter <- init
-  
+
+  if (save_iter) {
+    like_vec <- rep(NA, max_iter)
+    full_like_vec <- rep(NA, max_iter)
+    all_models <- vector(mode = "list", length = max_iter)
+  }
 
   while (continue) {
     # browser()
@@ -230,6 +229,20 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
     coef_diff <- coef_diff(current_iter, prev_iter, FALSE, FALSE)
     pl <- philips(c(entropy_vec[2], mccl_vec, coef_diff))
 
+    # curr_like <- purrr::map_dbl(models(current_iter), flexmix::logLik)
+    # prev_like <- purrr::map_dbl(models(prev_iter), flexmix::logLik)
+    # if (prev_like > curr_like) {
+    #   current_iter <- prev_iter
+    # }
+    # if (save_iter) {
+    #   like_vec[iter] <- curr_like
+    #   full_like_vec[iter] <- purrr::map_dbl(models(current_iter),
+    #     flexmix::logLik, newdata = aux_df)
+    #   all_models[iter] <- models(current_iter)[[1]]
+    # }
+
+
+    browser()
     curr_like <- likelihood(current_iter, fmld_data, 1 - 1e-3)
     print(iter)
     print(purrr::map(models(current_iter), coef))

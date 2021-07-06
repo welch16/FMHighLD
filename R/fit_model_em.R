@@ -67,12 +67,6 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
   min_tol <- min_tol(fm_param)
   annot_tol <- annot_tol(fm_param)
 
-  # if (save_iter) {
-  #   states <- list()
-  # } else {
-  #   states <- NULL
-  # }
-
   if (is.null(formula)) {
     formula <- build_formula("response", colnames(annot_matrix), TRUE)
     warning("using formula ", as.character(formula))
@@ -100,12 +94,6 @@ fmhighld_fit_em <- function(response, annot_matrix, ld_clusters,
     if (verbose) {
       message("starting iter ", iter)
     }
-
-# em_iteration_single <- function(
-#   formula, data, pi, model_list, sigma0, fm_param, verbose) {
-# em_iteration_multi <-
-#   function(formula, data, pi, model_list, sigma0, fm_param, verbose = TRUE) {
-
 
     if (singletrait) {
       causal_list <- purrr::map(model_list,

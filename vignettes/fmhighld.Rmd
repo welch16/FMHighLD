@@ -58,7 +58,7 @@ We included in the package the simulation methods from Hardin et. al., 2012 _"A 
 
 set.seed(12345)
 nsnps <- 2000
-nldblocks <- 1000
+nldblocks <- 500
 annot_beta <- c("(Intercept)" = 0, "skew" =  3)
 
 snp_data <- simulate_FMHighLD_simple(nsnps, nldblocks, 0.2, 0.1, 2,
@@ -79,7 +79,7 @@ names(ld_clusters) <- snp_names
 
 fmparam <- FMParam(strategy = "all",
     prob = .95,
-    min_tol = 1e-3, max_iter = 100, annot_tol = 1e-2)
+    min_tol = 1e-3, max_iter = 200, annot_tol = 1e-2)
 
 tictoc::tic()
 fmld_fit_em <- fmhighld_fit_em(
@@ -90,24 +90,6 @@ fmld_fit_em <- fmhighld_fit_em(
   save_iter = TRUE, verbose = TRUE)
 tictoc::toc()
 
-true_data <- snp_data %>%
-  dplyr::filter(causal == 1) %>%
-  dplyr::select((-causal))
-
-true_model <- lm(z ~ 1 + skew, data = as.data.frame(true_data) %>%
-  tibble::column_to_rownames("snp"))
-summary(true_model)
-
-
-tictoc::tic()
-fmld_fit_lm <- fmhighld_fit(
-  response, skew_mat, ld_clusters,
-  singletrait = TRUE,
-  formula = response ~ 1 + annot,
-  skip_causal = FALSE,
-  fm_param = fmparam,
-  save_iter = FALSE, verbose = TRUE)
-tictoc::toc()
 
 tt <- tibble::tibble(id = seq_along(fmld_fit_em$loglike),
   loglike = fmld_fit_em$loglike,
@@ -122,6 +104,30 @@ cowplot::plot_grid(
     tt %>%
       ggplot(aes(id, diff)) + geom_line() +
       theme(axis.title.x = element_blank()), ncol = 1)
+
+
+fmld_fit_em %>% names
+
+true_data <- snp_data %>%
+  dplyr::filter(causal == 1) %>%
+  dplyr::select((-causal))
+
+true_model <- lm(z ~ 1 + skew, data = as.data.frame(true_data) %>%
+  tibble::column_to_rownames("snp"))
+summary(true_model)
+
+
+tictoc::tic()
+debugonce(fmhighld_fit)
+fmld_fit_lm <- fmhighld_fit(
+  response, skew_mat, ld_clusters,
+  singletrait = TRUE,
+  formula = response ~ 1 + annot,
+  init_coef_mean = c(0, 3),
+  fm_param = fmparam,
+  save_iter = FALSE, verbose = TRUE)
+tictoc::toc()
+
 
 
 fmld_fit_em$all_models[[which.max(tt$diff)]] %>%
