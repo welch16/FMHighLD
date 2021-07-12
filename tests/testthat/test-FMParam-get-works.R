@@ -15,3 +15,18 @@ test_that("FMParam with 'none' strategy works", {
 
 })
 
+test_that("FMParam with 'all' strategy works", {
+
+  fmparam <- FMParam(strategy = "all", prob = .9, k = 3)
+  expect_equal(params_all(fmparam), list(prob = .9, k = 3))
+
+})
+
+test_that("FMParam with 'pick_m' strategy workds", {
+
+  fmparam <- FMParam(strategy = "pick_m", prob = .9, m = 3, k = 3,
+    m_sel = "random")
+  expect_equal(params_pickm(fmparam),
+    list(prob = 0.9, k = 3, m = 3, msel = "random"))
+
+})
