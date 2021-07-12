@@ -121,8 +121,8 @@ causal_rule <- function(data, residuals, fm_param, group, annot_names) {
   if ("(Intercept)" %in% annot_names) {
   new_data <- dplyr::mutate(new_data,
     "(Intercept)" = 1,
-    aux_norm = norm2_wrap(!!! annot_sym)) %>%
-    dplyr::select(-`(Intercept)`)
+    aux_norm = norm2_wrap(!!! annot_sym))
+  new_data <- dplyr::select(new_data, -`(Intercept)`)
   } else {
   new_data <- dplyr::mutate(new_data,
     aux_norm = norm2_wrap(!!! annot_sym))
@@ -183,8 +183,12 @@ causal_rule <- function(data, residuals, fm_param, group, annot_names) {
 
   }
 
-  n <- which_snp <- snp <- res_seq <- aux_norm <- NULL
-
+  n <- NULL
+  which_snp <- NULL
+  snp <- NULL
+  res_seq <- NULL
+  aux_norm <- NULL
+  `(Intecept)` <- NULL
   out
 }
 
