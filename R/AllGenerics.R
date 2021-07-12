@@ -197,15 +197,11 @@ setGeneric("coef_diff_em",
   function(object, prev, model_error, background_error)
     standardGeneric("coef_diff_em"))
 
-#' Computes the FMHighLD's model likelihood
+#' Computes the FMHighLD's model log-likelihood
 #' @param object The `FMIter` object
 #' @param fmld_data A `data.frame` with the response and annotation matrix
-#' @param noncand_prob A numeric value indicating the probability of a variant
-#'  that wasn't selected as causal candidate to be no-causal. The probability of
-#'  being in one of the causal classes is going to be equally distributed among
-#'  all elements in the mixture
-#' @return The likelihood of the FMHighLD model
+#' @return The log-likelihood of the FMHighLD model
 #' @docType methods
 #' @rdname FMIter-methods
-setGeneric("likelihood",
-  function(object, fmld_data, noncand_prob) standardGeneric("likelihood"))
+setGeneric("loglikelihood",
+  function(object, fmld_data) standardGeneric("loglikelihood"))

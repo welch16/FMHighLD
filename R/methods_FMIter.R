@@ -64,45 +64,38 @@ substitute_weights <- function(i, weight, causal_candidate, gamma) {
 }
 
 #' @rdname FMIter-methods
-#' @aliases likelihood
+#' @aliases loglikelihood
 #' @docType methods
-setMethod("likelihood",
-  signature = signature(object = "FMIter", fmld_data = "data.frame",
-    noncand_prob = "numeric"),
-  definition = function(object, fmld_data, noncand_prob) {
+setMethod("loglikelihood",
+  signature = signature(object = "FMIter", fmld_data = "data.frame"),
+  definition = function(object, fmld_data) {
 
-    # browser()
     if (object@singletrait) {
       fmld_data <- as.data.frame(fmld_data)
       fmld_data <- tibble::column_to_rownames(fmld_data, "snp")
-      nmixtures <- length(object@models)
-      weights <- replicate(nmixtures, {
-        rlang::set_names(
-          rep((1 - noncand_prob) / nmixtures, object@nassoc),
-          rownames(fmld_data))}, simplify = FALSE)
-      weights <- purrr::pmap(
-        list(seq_along(weights) + 1, weights, object@causal_candidates),
-        substitute_weights, object@gamma)
-      preds <- purrr::map(weights, ~ dplyr::mutate(fmld_data, w = .))
-      preds <- purrr::map2(object@models, preds, stats::predict)
-      preds <- c(list(
-        rlang::set_names(rep(0, object@nassoc), rownames(fmld_data))),
-        preds)
-      fz <- purrr::map2(preds, object@sigma[1, ],
-        ~ stats::dnorm(fmld_data$response, .x, .y, FALSE))
-      pi <- colSums(as.matrix(object@gamma))
-      pi <- pi / sum(pi)
-
-      likelihood <- prod(rowSums(do.call(cbind, purrr::map2(fz, pi, `*`))))
+      preds <- purrr::map(models(object),
+        stats::predict, fmld_data)
+      sigma <- object@sigma[1, ]
+      f0 <- stats::dnorm(x = fmld_data[["response"]],
+        mean = 0, sd = sqrt(sigma[1]))
+      fz <- purrr::map2(preds, sigma[-1],
+        ~ stats::dnorm(x = fmld_data[["response"]],
+        mean = .x, sd = sqrt(.y)))
+      probs <- compute_mixture_prob(object@gamma)
+      f0 <- probs[1] * f0
+      fz <- purrr::map2(fz, probs[-1], `*`)
+      fz[[length(fz) + 1]] <- f0
+      fz <- do.call(cbind, fz)
+      loglike <- sum(log(rowSums(fz)))
 
     } else {
-    
+
       browser()
       x
 
     }
 
-    likelihood
+    loglike
 })
 
 

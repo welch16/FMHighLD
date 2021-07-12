@@ -241,13 +241,11 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
     #   all_models[iter] <- models(current_iter)[[1]]
     # }
 
-
-    browser()
-    curr_like <- likelihood(current_iter, fmld_data, 1 - 1e-3)
+    curr_like <- loglikelihood(current_iter, fmld_data)
     print(iter)
     print(purrr::map(models(current_iter), coef))
     print(stringr::str_c("pl: ", pl))
-    print(stringr::str_c("loglikeli: ", log(curr_like)))
+    print(stringr::str_c("loglikeli: ", curr_like))
 
     continue <- iter < max_iter & pl >= min_tol
 

@@ -10,13 +10,13 @@
 \alias{mccl}
 \alias{coef_diff}
 \alias{coef_diff_em}
-\alias{likelihood}
+\alias{loglikelihood}
 \alias{models,FMIter-method}
 \alias{probmatrix,FMIter-method}
 \alias{sigma0,FMIter-method}
 \alias{causal_candidates,FMIter-method}
 \alias{prob_metric,FMIter,FMIter-method}
-\alias{likelihood,FMIter,data.frame,numeric-method}
+\alias{loglikelihood,FMIter,data.frame-method}
 \alias{mccl,FMIter,FMIter-method}
 \alias{coef_diff,FMIter,FMIter,logical,logical-method}
 \alias{coef_diff_em,FMIter,FMIter,logical,logical-method}
@@ -38,7 +38,7 @@ coef_diff(object, prev, model_error, background_error)
 
 coef_diff_em(object, prev, model_error, background_error)
 
-likelihood(object, fmld_data, noncand_prob)
+loglikelihood(object, fmld_data)
 
 \S4method{models}{FMIter}(object)
 
@@ -50,7 +50,7 @@ likelihood(object, fmld_data, noncand_prob)
 
 \S4method{prob_metric}{FMIter,FMIter}(object, prev)
 
-\S4method{likelihood}{FMIter,data.frame,numeric}(object, fmld_data, noncand_prob)
+\S4method{loglikelihood}{FMIter,data.frame}(object, fmld_data)
 
 \S4method{mccl}{FMIter,FMIter}(object, prev)
 
@@ -72,11 +72,6 @@ errors' difference to the output vector}
 background errors' difference to the output vector}
 
 \item{fmld_data}{A `data.frame` with the response and annotation matrix}
-
-\item{noncand_prob}{A numeric value indicating the probability of a variant
-that wasn't selected as causal candidate to be no-causal. The probability of
-being in one of the causal classes is going to be equally distributed among
-all elements in the mixture}
 }
 \value{
 a list of linear models for single trait or linear mixed models for
@@ -98,7 +93,7 @@ the distance between the fixed effect coefficients
 
 the distance between the fixed effect coefficients
 
-The likelihood of the FMHighLD model
+The log-likelihood of the FMHighLD model
 }
 \description{
 `models` return the list of models estimated in the `FMHighLD` iteration
