@@ -52,6 +52,8 @@ names(ld_cluster) <- names(z)
 data <- build_fm_tibble(z, annot, ld_cluster, TRUE)
 init_causal_candidates_coef(data, TRUE, response ~ 0 + annot, .5, 1,
  FMParam())
-init_causal_candidates_coef(data, TRUE, response ~ 0 + annot, .5, 2,
+init_causal_candidates_coef(data, TRUE, response ~ 0 + annot, c(0,.5), 1,
+ FMParam())
+init_causal_candidates_coef(data, TRUE, response ~ 1 + annot, c(.3,.5), 1,
  FMParam())
 }

@@ -92,6 +92,7 @@ init_iteration <- function(formula, init_coef_mean, data, singletrait,
 #' @importFrom dplyr group_by sample_n
 #' @importFrom purrr map map2
 #' @importFrom stringr str_c
+#' @importFrom MASS mvrnorm
 #' @export
 #' @examples
 #' nsnps <- 10
@@ -104,7 +105,9 @@ init_iteration <- function(formula, init_coef_mean, data, singletrait,
 #' data <- build_fm_tibble(z, annot, ld_cluster, TRUE)
 #' init_causal_candidates_coef(data, TRUE, response ~ 0 + annot, .5, 1,
 #'  FMParam())
-#' init_causal_candidates_coef(data, TRUE, response ~ 0 + annot, .5, 2,
+#' init_causal_candidates_coef(data, TRUE, response ~ 0 + annot, c(0,.5), 1,
+#'  FMParam())
+#' init_causal_candidates_coef(data, TRUE, response ~ 1 + annot, c(.3,.5), 1,
 #'  FMParam())
 init_causal_candidates_coef <- function(data, singletrait, formula,
   init_coef_mean, ncausal_mixt, fm_param) {
@@ -115,7 +118,15 @@ init_causal_candidates_coef <- function(data, singletrait, formula,
     init_model <- lme4::lmer(formula, data = data)
   }
 
+  if (! has_intercept(formula) & length(init_coef_mean) > 1 &
+    init_coef_mean[1] != 0) {
+    stop("the propossed intecept is different from zero")
+  }
+
   init_coef <- stats::coef(init_model)
+  if (!has_intercept(formula) & length(init_coef_mean) > 1) {
+    init_coef_mean <- init_coef_mean[-1]
+  }
   if (length(init_coef) != length(init_coef_mean)) {
     stop(stringr::str_c("The dimension of `init_coef_mean` is not the",
       "same than the parameters suggested by the formula", sep = " "))
@@ -126,8 +137,13 @@ init_causal_candidates_coef <- function(data, singletrait, formula,
   }
 
   init_models <- replicate(ncausal_mixt, {
-    init_model$coefficients <- MASS::mvrnorm(1, mu = init_coef_mean,
-      Sigma = diag(rep(1e-2, length(init_coef_mean))))
+    if (has_intercept(formula)) {
+      init_model$coefficients <- MASS::mvrnorm(1, mu = init_coef_mean,
+        Sigma = diag(rep(1e-2, length(init_coef_mean))))
+    } else {
+      init_model$coefficients <- rnorm(1, init_coef_mean, sd = 1e-2)
+      names(init_model$coefficients) <- names(init_coef_mean)
+    }
     init_model
   }, simplify = FALSE)
 
