@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // estep
 arma::mat estep(arma::vec y, arma::vec pi, arma::mat mu, arma::mat sigma);
 RcppExport SEXP _FMHighLD_estep(SEXP ySEXP, SEXP piSEXP, SEXP muSEXP, SEXP sigmaSEXP) {
