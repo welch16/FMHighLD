@@ -209,6 +209,8 @@ init_causal_candidates_random <- function(data, singletrait, ncausal_mixt) {
 
   causal_cand <- purrr::map(group_data, "snp")
   samp_names <- purrr::map(group_data, "sample_var")
+
+  ld_cluster <- trait <- NULL
   purrr::map2(causal_cand, samp_names, rlang::set_names)
 
 }

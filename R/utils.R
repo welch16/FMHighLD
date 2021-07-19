@@ -217,6 +217,9 @@ philips <- function(x) {
 #' @export
 build_loglike_tibble <- function(iter_list) {
 
+  loglike <- NULL
+  full <- NULL
+
   out <- tibble::tibble(id = seq_along(iter_list$loglike),
     loglike = iter_list$loglike,
     full = iter_list$full_loglike)

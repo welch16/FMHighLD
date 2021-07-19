@@ -104,6 +104,7 @@ simulate_FMHighLD_simple <- function(nsnps, nldblocks, ld_delta, ld_epsilon,
       causal = dplyr::if_else(snp %in% causals, 1, 0),
       skew)
 
+  snp <- causal <- NULL
   dplyr::mutate(snp_data,
       z = rnorm(nsnps, dplyr::if_else(causal == 1,
         skew_mat %*% z_beta, 0.0), sd = sqrt(z_sigma2)))
