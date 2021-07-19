@@ -37,7 +37,7 @@ test_that("init_causal_candidates_coef works with intercept", {
     c("(Intercept)" = 1, "annot" = .5), 1,
     FMParam())
   expect_equal(init1[[1]],
-    c(ld1 = "snp5", ld2 = "snp10", ld3 = "snp4", ld4 = "snp3"))
+    c(ld1 = "snp5", ld2 = "snp8", ld3 = "snp6", ld4 = "snp2"))
 })
 
 
