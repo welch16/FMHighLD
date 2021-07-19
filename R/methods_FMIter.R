@@ -55,6 +55,12 @@ setMethod("prob_metric",
 })
 
 
+#' Substitutes a column from the weight matrix
+#' @param i column to substitute into the weight matrix
+#' @param weight the weight vector for every snp
+#' @param causal_candidate the snp entries to substitute
+#' @param gamma the posterior probability matrix
+#' @return a new vector of weights
 substitute_weights <- function(i, weight, causal_candidate, gamma) {
 
   gamma_vec <- rlang::set_names(as.vector(gamma[, i]), causal_candidate)
@@ -185,4 +191,14 @@ setMethod("coef_diff_em",
       object
     }
     out
+})
+
+#' @rdname FMIter-methods
+#' @aliases get_causal_data
+#' @docType methods
+setMethod("get_causal_data",
+  signature = signature(object = "FMIter", fmld_data = "data.frame"),
+  definition = function(object, fmld_data) {
+  causal_cand <- causal_candidates(object)
+  purrr::map(causal_cand, ~ dplyr::filter(fmld_data, snp %in% .))
 })

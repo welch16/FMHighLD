@@ -171,17 +171,18 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
 
   continue <- TRUE
   current_iter <- init
-
   if (save_iter) {
-    like_vec <- rep(NA, max_iter)
-    full_like_vec <- rep(NA, max_iter)
+    like_vec <- matrix(rep(NA, max_iter * ncausal_mixt), ncol = ncausal_mixt)
+    full_like_vec <- matrix(rep(NA, max_iter * ncausal_mixt), ncol = 
+      ncausal_mixt)
     all_models <- vector(mode = "list", length = max_iter)
   }
 
+  aux_df <- as.data.frame(fmld_data)
+
   while (continue) {
-    # browser()
+
     iter <- iter + 1
-    # if (iter > 10) browser()
     prev_iter <- current_iter
     model_list <- models(prev_iter)
     sigma0 <- sigma0(prev_iter, fmld_data[[get_response_name(formula)]])
@@ -189,22 +190,10 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
       message("starting iter ", iter)
     }
 
-# em_iteration_single <- function(
-#   formula, data, pi, model_list, sigma0, fm_param, verbose) {
-# em_iteration_multi <-
-#   function(formula, data, pi, model_list, sigma0, fm_param, verbose = TRUE) {
-
-
     if (singletrait) {
       causal_list <- purrr::map(model_list,
         ~ select_causals_single(fmld_data, .x, fm_param, "ld_cluster",
           annot_names))
-      causal_wide <- causal_list %>%
-        purrr::map2(
-          stringr::str_c("which_snp", seq_len(ncausal_mixt), sep = "_"),
-            ~ rlang::set_names(.x, c("ld_cluster", .y))) %>%
-        purrr::reduce(purrr::partial(dplyr::inner_join, by = "ld_cluster"))
-      # print(dplyr::pull(causal_wide, which_snp_1))
 
     } else {
       browser()
@@ -213,6 +202,7 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
         ~ select_causals_multi(train_data, .x, response, to_group,
           fm_param, cond_res))
     }
+
 
 
     if (singletrait) {
@@ -229,255 +219,38 @@ fmhighld_fit <- function(response, annot_matrix, ld_clusters,
     coef_diff <- coef_diff(current_iter, prev_iter, FALSE, FALSE)
     pl <- philips(c(entropy_vec[2], mccl_vec, coef_diff))
 
-    # curr_like <- purrr::map_dbl(models(current_iter), flexmix::logLik)
-    # prev_like <- purrr::map_dbl(models(prev_iter), flexmix::logLik)
-    # if (prev_like > curr_like) {
-    #   current_iter <- prev_iter
-    # }
-    # if (save_iter) {
-    #   like_vec[iter] <- curr_like
-    #   full_like_vec[iter] <- purrr::map_dbl(models(current_iter),
-    #     flexmix::logLik, newdata = aux_df)
-    #   all_models[iter] <- models(current_iter)[[1]]
-    # }
+    curr_data <- get_causal_data(current_iter, fmld_data)
+    curr_like <- purrr::map_dbl(curr_data, ~ loglikelihood(current_iter, .))
 
-    curr_like <- loglikelihood(current_iter, fmld_data)
+    prev_data <- get_causal_data(prev_iter, fmld_data)
+    if (iter == 1) {
+      prev_like <- rep(-Inf, ncausal_mixt)
+    } else {
+      prev_like <- purrr::map_dbl(prev_data, ~ loglikelihood(prev_iter, .))
+    }
+    if (all(prev_like > curr_like)) {
+      current_iter <- prev_iter
+    }
+    if (save_iter) {
+      like_vec[iter, ] <- curr_like
+      full_like_vec[iter, ] <- prev_like
+      all_models[iter] <- current_iter
+    }
+
     print(iter)
-    print(purrr::map(models(current_iter), coef))
     print(stringr::str_c("pl: ", pl))
-    print(stringr::str_c("loglikeli: ", curr_like))
+    print(stringr::str_c("loglikeli: ", max(curr_like)))
 
     continue <- iter < max_iter & pl >= min_tol
 
   }
 
   # remember to add final causal candidates to object
-  print(round(compute_mixture_prob(probmatrix(current_iter)), 2))
-  current_iter
+  if (save_iter) {
+    out <- list(all_models = all_models, loglike = like_vec,
+      full_loglike = full_like_vec, final = current_iter)
+  } else {
+    out <- current_iter
+  }
+  out
 }
-
-# iterative_select_causal_init <- function(train_data,
-#                                       model_formula,
-#                                       causal_candidates,
-#                                       features = c("ATAC","TF_alle"),
-#                                       response = "eQTL_tStat",                            
-#                                       to_group = c("eQTL_gene","cluster"),
-#                                       cond_res = FALSE,
-#                                       rand_param = NULL,
-#                                       max_iter = 100,
-#                                       tol = 1e-6,save_state = FALSE,
-#                                       univariate = FALSE,
-#                                       verbose = FALSE)
-# {
-#     ## init iteration parameters
-#     error_bound = 1e-4
-#     continue = TRUE
-#     iter = 0
-  
-#     states = NULL
-#     if(save_state){
-#         states = list()
-#     }
-
-#     init = init_iteration(model_formula,                   
-#                          causal_candidates,
-#                          response,univariate)
-
-#     model_list = init$models
-#     pi = init$gamma %>% colMeans()
-
-#     background_error = rep_along(model_list,1)
-    
-#     prev_causals = list(
-#         causal_candidates %>%
-#         mutate(prob = 1/2)) 
-
-
-#     while(continue){
-    
-#         if(verbose) message("Iter ", iter)
-        
-#         if(univariate){
-#             causal_list = map(model_list,
-#                               ~ select_causals_single(train_data,.x,
-#                                                    response,to_group,
-#                                                    rand_param))
-#         }else{
-        	
-#             causal_list = map(model_list,
-#                               ~ select_causals_multi(train_data,.x,
-#                                                 response,to_group,rand_param,
-#                                                 cond_res))
-#         }
-
-#         filtered_list = map(causal_list,
-#                             ~ rebuild_data(train_data,.,to_group))
-
-#         if(univariate){
-#             iter_list = map( filtered_list,
-#                             ~ em_iteration_single(formula = model_formula,
-#                                            data = .,
-#                                            response = response,
-#                                            pi = pi,
-#                                            model_list = model_list,
-#                                            background_error = background_error
-#                                            ))
-            
-#             param_list  = map2(iter_list, filtered_list,
-#                                parse_estimated_parameter_single,response) %>%
-#                 unlist(recursive = FALSE)
-
-#             param_metric = map2(
-#                 param_list[!str_detect(names(param_list),"random_eff")],
-#                 list(
-#                     pi = pi,
-#                     param_list = map(model_list,coef),
-#                     residual_error_list = map(model_list,broom::glance) %>%
-#                         map("sigma"),
-#                     background_error = background_error),
-#                 ~ ( unlist(.x) - unlist(.y))^2) %>%
-#                 map_dbl(sum) %>% { sum(.) / (1 + max(.))} %>% sqrt()
-
-#             pi = param_list$pi
-#             model_list = iter_list %>% map("models") %>%
-#                 map(pluck,1)
-#             background_error = param_list$background_error 
-            
-#         }else{
-#             iter_list = map( filtered_list,
-#                             ~ em_iteration_multi(formula = model_formula,
-#                                            data = .,
-#                                            response = response,
-#                                            pi = pi,
-#                                            model_list = model_list,
-#                                            background_error = background_error,
-#                                            REML = TRUE,
-#                                            verbose = verbose))
-#             param_list  = map2(iter_list, filtered_list,
-#                                parse_estimated_parameter_multi,response) %>%
-#                 unlist(recursive = FALSE)
-
-#             error_list = map(model_list,
-#                                   broom::tidy) %>%
-#                 map(filter,group != "fixed")
-            
-#             param_metric = map2(
-#                 param_list[!str_detect(names(param_list),"random_eff")],
-#                 list(
-#                     pi = pi,
-#                     param_list = map(model_list,fixef),
-#                     gene_error_list = map(error_list,
-#                                           filter,group != "Residual") %>%
-#                         map(pull,estimate),
-#                     residual_error_list = map(error_list,filter,group == "Residual") %>%
-#                         map(pull,estimate),
-#                     background_error = background_error),
-#                 ~ ( unlist(.x) - unlist(.y))^2) %>%
-#                 map_dbl(sum) %>% { sum(.) / (1 + max(.))} %>% sqrt()
-
-#             pi = param_list$pi
-#             model_list = iter_list %>%
-#                 map(pluck,"models")
-#             background_error = param_list$background_error 
-            
-            
-#             model_list %<>% unlist()
-#         }            
-      
-#         mce = map2(causal_list,prev_causals,
-#                    inner_join,by = to_group) %>%
-#             map(mutate, diff = which_snp != SNP) %>%
-#             map(pull,diff) %>%
-#             map_dbl(mean) %>%
-#             max()
-       
-#         weight_list = iter_list %>% map( ~ .$gamma[,2]) 
-        
-#         entropy = prev_causals %>%
-#             map(pull,prob) %>%
-#             map2_dbl(weight_list, ~ kl(.y,.x))
-#         jsdist = prev_causals %>%
-#             map(pull,prob) %>%
-#             map2_dbl(weight_list,jsd)
-
-#         metrics = c("js_dist" = jsdist)
-
-#         continue = any(metrics >= tol) & iter < max_iter
-#         iter = iter + 1
-                  
-#         prev_causals = causal_list %>%
-#             map(dplyr::rename,SNP = which_snp) %>%
-#             map2(iter_list,
-#                  ~ mutate(.x,prob = .y$gamma[,2]))
-
-#         metrics["miss_class_err"] = mce
-#         metrics["philips"] = param_metric        
-
-#         if(univariate){
-
-#             model_metrics = model_list %>%
-#                 map(broom::glance)
-                     
-#         }else{
-
-#             model_metrics = model_list %>%
-#                 map(broom::glance)
-            
-#         }
-
-#         metrics["filtered_err"] = model_metrics %>% map_dbl("sigma")
-#         metrics["filtered_logLik"] = model_metrics %>% map_dbl("logLik")
-#         metrics["filtered_AIC"] = model_metrics %>% map_dbl("AIC")
-#         metrics["filtered_BIC"] = model_metrics %>% map_dbl("BIC")
-#         metrics["kl"] = entropy
-
-#         if(save_state){
-#             ## states[[iter]] = param_list
-#             states[[iter]] = list(
-#                 "param" = param_list,
-#                 "causal" = prev_causals,
-#                 "metrics" = metrics)            
-            
-#         }
-
-        
-
-#     }
-
-
-#     metrics["iter_exit"] = iter - 1
-
-#     if(univariate){
-#         final_causals = map(model_list,
-#                              ~ select_causals_single(train_data,.x,
-#                                                   response,to_group,
-#                                                   rand_param))
-#         ranef_list = NULL
-#     }else{
-#         final_causals = map( model_list,
-#                           ~ select_causals_multi(train_data,.x,
-#                                                  response,to_group,rand_param,
-#                                                  cond_res))
-#         ranef_list = map(iter_list,"models") %>%
-#             unlist(recursive =FALSE) %>%
-#             map(ranef) %>%
-#             map(as_tibble) %>%
-#             map(spread,term,condval)
-#     }
-    
-     
-#     filtered_data = map(final_causals,
-#                         ~ rebuild_data(train_data,.,to_group))
-
-
-    
-#     list(
-#         estimated_parameters = map(param_list,unlist,recursive = FALSE),
-#         metrics = metrics,
-#         final_causal = final_causals[[1]],
-#         gamma = iter_list[[1]]$gamma,
-#         states = states,
-#         ranef = ranef_list)
-    
-  
-# }

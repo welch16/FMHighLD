@@ -119,20 +119,20 @@ causal_rule <- function(data, residuals, fm_param, group, annot_names) {
   annot_sym <- rlang::syms(annot_names)
   new_data <- dplyr::rowwise(data)
   if ("(Intercept)" %in% annot_names) {
-  new_data <- dplyr::mutate(new_data,
-    "(Intercept)" = 1,
-    aux_norm = norm2_wrap(!!! annot_sym))
-  new_data <- dplyr::select(new_data, -`(Intercept)`)
+    new_data <- dplyr::mutate(new_data,
+      "(Intercept)" = 1,
+      aux_norm = norm2_wrap(!!! annot_sym))
+    new_data <- dplyr::select(new_data, -`(Intercept)`)
   } else {
-  new_data <- dplyr::mutate(new_data,
-    aux_norm = norm2_wrap(!!! annot_sym))
+    new_data <- dplyr::mutate(new_data,
+      aux_norm = norm2_wrap(!!! annot_sym))
   }
   new_data <- dplyr::ungroup(new_data)
   new_data <- dplyr::select(new_data, snp, tidyselect::one_of(group),
     aux_norm)
   new_data <- dplyr::mutate(new_data, res_seq = residuals ^ 2)
   new_data <- dplyr::mutate(new_data,
-    res_seq = dplyr::if_else(aux_norm >= annot_tol(fm_param),
+    res_seq = dplyr::if_else(aux_norm <= annot_tol(fm_param),
       Inf, res_seq))
   new_data <- dplyr::group_by(new_data, !!! rlang::syms(group))
 
@@ -188,7 +188,7 @@ causal_rule <- function(data, residuals, fm_param, group, annot_names) {
   snp <- NULL
   res_seq <- NULL
   aux_norm <- NULL
-  `(Intecept)` <- NULL
+  `(Intercept)` <- NULL
   out
 }
 

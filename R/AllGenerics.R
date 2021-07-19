@@ -205,3 +205,12 @@ setGeneric("coef_diff_em",
 #' @rdname FMIter-methods
 setGeneric("loglikelihood",
   function(object, fmld_data) standardGeneric("loglikelihood"))
+
+#' Get causal data
+#' @param object The `FMIter` object
+#' @param fmld_data A `data.frame` with the response and annotation matrix
+#' @return `fmld_data` for the causal candidates
+#' @docType methods
+#' @rdname FMIter-methods
+setGeneric("get_causal_data",
+  function(object, fmld_data) standardGeneric("get_causal_data"))

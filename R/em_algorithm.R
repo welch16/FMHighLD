@@ -1,5 +1,6 @@
 #' @useDynLib FMHighLD
 #' @exportPattern ^[[:alpha:]]+
+#' @importFrom Rcpp evalCpp
 NULL
 
 #' Performs an Expectation-Maximization iterations for the multi trait model

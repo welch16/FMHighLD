@@ -207,3 +207,24 @@ philips <- function(x) {
   sqrt(sum(x^2) / (1 + max(x)))
 
 }
+
+#' Builds a likelihood list
+#' @param iter_list A list of iteraction after running `fmhighld_fit_[em|lm]`
+#'    with 'save_iter = TRUE'
+#' @return a `tibble::tibble`
+#' @importFrom tibble tibble
+#' @importFrom dplyr mutate
+#' @export
+build_loglike_tibble <- function(iter_list) {
+
+  out <- tibble::tibble(id = seq_along(iter_list$loglike),
+    loglike = iter_list$loglike,
+    full = iter_list$full_loglike)
+  dplyr::mutate(out, diff = loglike - full)
+
+}
+
+
+.onUnload <- function(libpath) {
+  library.dynam.unload("FMHighLD", libpath)
+}
