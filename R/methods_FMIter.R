@@ -97,7 +97,7 @@ setMethod("loglikelihood",
     } else {
 
       browser()
-      x
+      x <- NULL
 
     }
 

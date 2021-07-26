@@ -191,6 +191,9 @@ init_causal_candidates_coef <- function(data, singletrait, formula,
 #' init_causal_candidates_random(data, FALSE, 3)
 init_causal_candidates_random <- function(data, singletrait, ncausal_mixt) {
 
+  ld_cluster <- NULL
+  trait <- NULL
+
   if (singletrait) {
     data <- dplyr::mutate(data, sample_var = ld_cluster)
     ld_vars <- "ld_cluster"
