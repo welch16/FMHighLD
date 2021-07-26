@@ -11,7 +11,6 @@
 \alias{coef_diff}
 \alias{coef_diff_em}
 \alias{loglikelihood}
-\alias{get_causal_data}
 \alias{models,FMIter-method}
 \alias{probmatrix,FMIter-method}
 \alias{sigma0,FMIter-method}
@@ -21,7 +20,6 @@
 \alias{mccl,FMIter,FMIter-method}
 \alias{coef_diff,FMIter,FMIter,logical,logical-method}
 \alias{coef_diff_em,FMIter,FMIter,logical,logical-method}
-\alias{get_causal_data,FMIter,data.frame-method}
 \title{models method}
 \usage{
 models(object)
@@ -42,8 +40,6 @@ coef_diff_em(object, prev, model_error, background_error)
 
 loglikelihood(object, fmld_data)
 
-get_causal_data(object, fmld_data)
-
 \S4method{models}{FMIter}(object)
 
 \S4method{probmatrix}{FMIter}(object)
@@ -61,8 +57,6 @@ get_causal_data(object, fmld_data)
 \S4method{coef_diff}{FMIter,FMIter,logical,logical}(object, prev, model_error, background_error)
 
 \S4method{coef_diff_em}{FMIter,FMIter,logical,logical}(object, prev, model_error, background_error)
-
-\S4method{get_causal_data}{FMIter,data.frame}(object, fmld_data)
 }
 \arguments{
 \item{object}{The `FMIter` object}
@@ -100,8 +94,6 @@ the distance between the fixed effect coefficients
 the distance between the fixed effect coefficients
 
 The log-likelihood of the FMHighLD model
-
-`fmld_data` for the causal candidates
 }
 \description{
 `models` return the list of models estimated in the `FMHighLD` iteration

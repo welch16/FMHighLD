@@ -164,7 +164,6 @@ em_iteration_single <- function(
   models <- purrr::map2(idxs[-1], new_data, underlying_linear_model,
     formula, gamma_mat, error_bound)
 
-  which_snp <- NULL
   FMIter(nassoc = nrow(data), singletrait = TRUE, models = models,
     causal_candidates = extract_causal_vector(causal_current),
     gamma = Matrix::Matrix(gamma_mat), mu = Matrix::Matrix(mu),
@@ -202,7 +201,6 @@ underlying_linear_model <- function(i, i_data, formula, gamma, error_bound) {
     weights <- pmax(weights, error_bound)
   }
 
-  which_snp <- ld_cluster <- NULL
   stats::lm(formula, data = dplyr::mutate(i_data, w = weights),
     weights = w)
 }
